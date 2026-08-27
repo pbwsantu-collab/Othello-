@@ -601,7 +601,7 @@
     </button>
   </div>
   <div class="sidebar-footer">
-    <p>📖 100 MCQs · Animations</p>
+    <p>📖 MCQs · Animations</p>
     <p style="margin-top:0.2rem; opacity:0.6;">🌸 Correct · 💥 Wrong</p>
   </div>
 </nav>
@@ -665,8 +665,8 @@
     <div class="tab-content" id="tab-quiz">
       <div class="quiz-container">
         <div class="quiz-header">
-          <h3>📝 100 MCQs</h3>
-          <span class="quiz-progress" id="quizProgress">1 / 100</span>
+          <h3>📝 Chapter Quiz</h3>
+          <span class="quiz-progress" id="quizProgress">1 / 1</span>
         </div>
         <div class="question-box" id="questionBox">
           <div class="question-text" id="questionText">Loading questions...</div>
@@ -681,7 +681,7 @@
       </div>
     </div>
 
-    <footer>Othello · Chapter 2 · 100 unique MCQs with animations</footer>
+    <footer>Othello · Chapter 2 · Interactive MCQs with animations</footer>
   </div>
 </main>
 
@@ -733,12 +733,10 @@
     overlay.addEventListener('click', closeSidebar);
 
     function switchTab(tabId) {
-      // update nav buttons
       navButtons.forEach(b => b.classList.remove('active'));
       const activeBtn = document.querySelector(`.sidebar-nav button[data-tab="${tabId}"]`);
       if (activeBtn) activeBtn.classList.add('active');
 
-      // update content
       Object.keys(tabContents).forEach(key => {
         if (tabContents[key]) {
           tabContents[key].classList.toggle('active', key === tabId);
@@ -807,10 +805,7 @@
     // ============================================================
     function buildGrid(containerId, entries, clickHandler) {
       const grid = document.getElementById(containerId);
-      if (!grid) {
-        console.error('Grid not found:', containerId);
-        return;
-      }
+      if (!grid) return;
       grid.innerHTML = '';
       entries.forEach(entry => {
         const span = document.createElement('span');
@@ -821,7 +816,6 @@
         span.addEventListener('click', clickHandler);
         grid.appendChild(span);
       });
-      console.log(`✅ Built grid: ${containerId} with ${entries.length} items`);
     }
 
     const mainEntries = Object.keys(dict).map(k => ({ en: k.charAt(0).toUpperCase() + k.slice(1), bn: dict[k] }));
@@ -829,7 +823,6 @@
 
     function wordClickHandler(e) {
       const el = e.currentTarget;
-      // Remove clicked class from all items in the same grid
       const parentGrid = el.closest('.word-grid') || el.closest('.analysis-word-grid');
       if (parentGrid) {
         parentGrid.querySelectorAll('.word-item, .analysis-word-item').forEach(x => x.classList.remove('clicked'));
@@ -839,7 +832,6 @@
       const en = el.dataset.en;
       const bn = el.dataset.bn;
       
-      // Find the meaning box - look in the parent tab
       const container = el.closest('.tab-content');
       if (!container) return;
       
@@ -867,8 +859,6 @@
     // ============================================================
     //  QUIZ ENGINE
     // ============================================================
-    console.log('📝 Building quiz...');
-    
     const qBank = [
       { q: "Who is the rich Senator in Venice?", opts: ["Brabantio", "Othello", "Iago", "Cassio"], ans: 0 },
       { q: "What is Desdemona's father's name?", opts: ["Othello", "Brabantio", "Iago", "Roderigo"], ans: 1 },
@@ -908,7 +898,6 @@
       { q: "What does Iago call Cassio?", opts: ["Brave", "Amorous", "Honest", "Wise"], ans: 1 },
       { q: "What does Othello think of Cassio's nature?", opts: ["Jealous", "Pleasing", "Rude", "Dishonest"], ans: 1 },
       { q: "What does Desdemona call Othello?", opts: ["My lord", "My love", "My general", "All of these"], ans: 3 },
-      { q: "What does Othello call Desdemona?", opts: ["Fair devil", "Angel", "Weed", "All of these"], ans: 3 },
       { q: "What is the setting of the play?", opts: ["Venice and Cyprus", "Rome", "Athens", "Egypt"], ans: 0 },
       { q: "What is Othello's ethnic background?", opts: ["Italian", "Moor", "Greek", "Turkish"], ans: 1 },
       { q: "What does Iago hate about Othello?", opts: ["Favoring Cassio", "His race", "His rank", "All of these"], ans: 3 },
@@ -920,73 +909,34 @@
       { q: "What does Cassio ask Desdemona?", opts: ["To mediate", "To marry", "To fight", "To leave"], ans: 0 },
       { q: "What does Othello promise Desdemona about Cassio?", opts: ["He will forgive", "He will kill", "He will exile", "He will promote"], ans: 0 },
       { q: "What does Iago say about Othello's peace?", opts: ["He deserves it", "It will be disturbed", "He is calm", "None"], ans: 1 },
-      { q: "What does Othello call his wife's qualities?", opts: ["Virtuous", "Fair", "Free of speech", "All"], ans: 3 },
+      { q: "What does Othello call his wife's qualities?", opts: ["Virtuous", "Fair", "Free of speech", "All of these"], ans: 3 },
       { q: "What does Othello say about proof?", opts: ["He needs it", "He trusts Iago", "He has it", "None"], ans: 0 },
-      { q: "What does Iago say about Othello's marriage?", opts: ["It is cursed", "It is unnatural", "It is blessed", "None"], ans: 1 },
       { q: "What does Othello say about his heart?", opts: ["Broken", "Strong", "Happy", "Indifferent"], ans: 0 },
-      { q: "What does Desdemona say about Othello's chiding?", opts: ["He could have gentle means", "He is cruel", "He is fair", "None"], ans: 0 },
-      { q: "What does Othello say about his tears?", opts: ["Cruel", "Joyful", "Sad", "Angry"], ans: 0 },
-      { q: "What does Desdemona beg for?", opts: ["Mercy", "Justice", "Revenge", "Truth"], ans: 0 },
-      { q: "What does Othello say about Cassio?", opts: ["He is guilty", "He is innocent", "He is dead", "None"], ans: 0 },
+      { q: "What does Desdemona beg for before her death?", opts: ["Mercy", "Justice", "Revenge", "Truth"], ans: 0 },
       { q: "What does Othello call the handkerchief?", opts: ["Magical", "Ordinary", "Cursed", "Blessed"], ans: 0 },
-      { q: "What does Othello say about his love?", opts: ["Not wisely but too well", "Wisely", "Too much", "Not enough"], ans: 0 },
-      { q: "What does Iago call Othello?", opts: ["The Moor", "The General", "The noble", "All"], ans: 3 },
       { q: "What is the final fate of Othello?", opts: ["Exile", "Suicide", "Execution", "Freedom"], ans: 1 },
-      { q: "What is the final fate of Desdemona?", opts: ["Suicide", "Murder", "Exile", "Freedom"], ans: 1 },
-      { q: "What is the final fate of Cassio?", opts: ["Death", "Wounded but lives", "Exile", "Promoted"], ans: 1 },
+      { q: "What is the final fate of Desdemona?", opts: ["Suicide", "Murdered", "Exile", "Freedom"], ans: 1 },
+      { q: "What is the final fate of Cassio?", opts: ["Death", "Wounded but lives", "Exile", "Execution"], ans: 1 },
       { q: "What is the final fate of Iago?", opts: ["Executed", "Escapes", "Suicide", "Imprisoned"], ans: 0 },
-      { q: "What does Othello say about his occupation?", opts: ["Sickened", "Glorious", "Boring", "Noble"], ans: 0 },
-      { q: "What does Othello compare Desdemona to?", opts: ["A weed", "A rose", "A lily", "A star"], ans: 0 },
-      { q: "What does Othello say about his mother?", opts: ["She gave the handkerchief", "She died", "She was a witch", "None"], ans: 0 },
-      { q: "What does Othello say about the Egyptian woman?", opts: ["She was a charmer", "She was a witch", "She was a queen", "None"], ans: 0 },
-      { q: "What does Desdemona say about her love?", opts: ["She loved him", "She pitied him", "She hated him", "None"], ans: 0 },
-      { q: "What does Brabantio warn Othello about?", opts: ["Desdemona's deceit", "War", "Iago", "Cassio"], ans: 0 },
-      { q: "What does Iago use to manipulate Othello?", opts: ["Jealousy", "Love", "Fear", "Anger"], ans: 0 },
-      { q: "What does Othello say about his past?", opts: ["He was a slave", "He was a king", "He was a prince", "None"], ans: 0 },
-      { q: "What does Othello say about his stories?", opts: ["They won Desdemona", "They bored her", "They scared her", "None"], ans: 0 },
-      { q: "What is the central theme?", opts: ["Jealousy", "Betrayal", "Racism", "All"], ans: 3 },
-      { q: "What does Emilia do for Iago?", opts: ["Steals handkerchief", "Kills Cassio", "Betrays Othello", "None"], ans: 0 },
-      { q: "What does Othello say about Cassio's reputation?", opts: ["He lost it", "He kept it", "He gained it", "None"], ans: 0 },
-      { q: "What does Othello say about his race?", opts: ["He is a Moor", "He is white", "He is Greek", "None"], ans: 0 },
-      { q: "What does Desdemona say about her father?", opts: ["She deceived him", "She loved him", "She hated him", "None"], ans: 0 },
-      { q: "What does Othello say about his sword?", opts: ["He falls on it", "He gives it", "He loses it", "None"], ans: 0 },
-      { q: "What does Othello say about his death?", opts: ["He chooses it", "He fears it", "He avoids it", "None"], ans: 0 },
-      { q: "What does Iago say about Cassio's suitability?", opts: ["He is a ladies' man", "He is a soldier", "He is a fool", "None"], ans: 0 },
-      { q: "What does Othello say about his heart?", opts: ["It is dead", "It is alive", "It is strong", "None"], ans: 0 },
-      { q: "What does Desdemona say about her bed?", opts: ["Wedding sheets", "Ordinary sheets", "Silk sheets", "None"], ans: 0 },
-      { q: "What does Othello say about his eyes?", opts: ["They roll", "They cry", "They see", "None"], ans: 0 },
-      { q: "What does Othello say about his lips?", opts: ["They gnaw", "They smile", "They kiss", "None"], ans: 0 },
-      { q: "What does Othello say about his hands?", opts: ["They kill", "They heal", "They hold", "None"], ans: 0 },
-      { q: "What does Othello say about his soul?", opts: ["He will not kill it", "He will save it", "He will lose it", "None"], ans: 0 },
-      { q: "What does Othello say about his prayers?", opts: ["He says them", "He forgets", "He refuses", "None"], ans: 0 },
-      { q: "What does Othello say about his kiss?", opts: ["Last kiss", "First kiss", "Sweet kiss", "None"], ans: 0 },
-      { q: "What does Othello say about his reputation?", opts: ["He has it", "He lost it", "He cares", "None"], ans: 0 },
-      { q: "What does Othello say about his valour?", opts: ["It is remembered", "It is forgotten", "It is doubted", "None"], ans: 0 },
-      { q: "What does Othello say about his love?", opts: ["Too well", "Too little", "Perfectly", "None"], ans: 0 },
-      { q: "What does Othello say about his death?", opts: ["He kills himself", "He is killed", "He dies naturally", "None"], ans: 0 },
-      { q: "What does Othello say about his life?", opts: ["Intolerable", "Wonderful", "Joyful", "None"], ans: 0 },
-      { q: "What does Othello say about his service?", opts: ["He served Venice", "He served Turkey", "He served Cyprus", "None"], ans: 0 },
-      { q: "What does Othello say about his wife?", opts: ["She was innocent", "She was guilty", "She was faithful", "None"], ans: 0 },
-      { q: "What does Othello say about his death?", opts: ["He falls on his sword", "He is poisoned", "He drowns", "None"], ans: 0 },
-      { q: "What does Othello say about his legacy?", opts: ["He is mourned", "He is forgotten", "He is hated", "None"], ans: 0 },
+      { q: "What does Brabantio warn Othello about?", opts: ["Desdemona's potential deceit", "War", "Iago", "Cassio"], ans: 0 },
+      { q: "What primary emotion does Iago use to manipulate Othello?", opts: ["Jealousy", "Love", "Fear", "Anger"], ans: 0 },
+      { q: "What central theme dominates the play Othello?", opts: ["Jealousy and betrayal", "Economy", "Sailing", "Comedy"], ans: 0 },
+      { q: "What does Emilia do with the dropped handkerchief?", opts: ["Gives it to Iago", "Destroys it", "Returns it immediately", "Burns it"], ans: 0 }
     ];
 
-    // Select 100 unique questions
-    const questions = [];
-    const usedQuestions = new Set();
-    
-    while (questions.length < 100 && usedQuestions.size < qBank.length) {
-      const idx = Math.floor(Math.random() * qBank.length);
-      const q = qBank[idx];
-      if (!usedQuestions.has(q.q)) {
-        usedQuestions.add(q.q);
-        questions.push({ ...q });
+    // Deduplicate and safely initialize question set
+    const uniqueMap = new Map();
+    qBank.forEach(item => {
+      if (!uniqueMap.has(item.q)) {
+        uniqueMap.set(item.q, item);
       }
-    }
+    });
 
-    console.log(`✅ Loaded ${questions.length} unique questions`);
+    const questions = Array.from(uniqueMap.values())
+      .sort(() => 0.5 - Math.random())
+      .map(q => ({ ...q }));
 
-    // Shuffle options for each question
+    // Shuffle options for each question safely
     questions.forEach(q => {
       const idxs = [0, 1, 2, 3];
       for (let i = idxs.length - 1; i > 0; i--) {
@@ -1064,7 +1014,6 @@
       
       renderQuestion();
       
-      // Auto-advance after delay
       if (current < total - 1) {
         setTimeout(function() {
           goNext();
@@ -1081,7 +1030,7 @@
     function showFlowers() {
       const layer = document.getElementById('animationLayer');
       const emojis = ['🌸', '🌺', '🌻', '🌷', '🌹', '🌼', '💐'];
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 25; i++) {
         const el = document.createElement('div');
         el.className = 'flower';
         el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
@@ -1098,7 +1047,7 @@
       const layer = document.getElementById('animationLayer');
       const bombEmoji = '💥';
       const shards = ['💢', '🔥', '💫', '⚡', '💨'];
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 3; i++) {
         const el = document.createElement('div');
         el.className = 'bomb';
         el.textContent = bombEmoji;
@@ -1107,7 +1056,7 @@
         el.style.fontSize = (2.5 + Math.random() * 2) + 'rem';
         layer.appendChild(el);
         setTimeout(function() { el.remove(); }, 1200);
-        for (let j = 0; j < 6; j++) {
+        for (let j = 0; j < 5; j++) {
           const shard = document.createElement('div');
           shard.className = 'bomb-shard';
           shard.textContent = shards[Math.floor(Math.random() * shards.length)];
@@ -1170,26 +1119,19 @@
     });
     resetBtn.addEventListener('click', resetQuiz);
 
-    // Initialize quiz
     if (questions.length > 0) {
       renderQuestion();
-      console.log('✅ Quiz initialized with', questions.length, 'questions');
     } else {
-      console.error('❌ No questions loaded!');
       questionText.textContent = 'Error: No questions available';
     }
 
-    // ============================================================
-    //  KEYBOARD SHORTCUT: ESC to close sidebar
-    // ============================================================
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' && sidebar.classList.contains('open')) {
         closeSidebar();
       }
     });
 
-    console.log('📚 Othello Interactive App loaded successfully!');
   })();
 </script>
 </body>
-          </html>
+</html>
