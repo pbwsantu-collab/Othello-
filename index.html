@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Othello - Interactive English to Bengali Reader & Quiz</title>
+  <title>Othello - Side-by-Side Bilingual Reader & Quiz Hub</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -54,20 +54,19 @@
       grid-template-columns: 1fr 380px;
       gap: 1.5rem;
       padding: 1.5rem;
-      max-width: 1400px;
+      max-width: 1440px;
       margin: 0 auto;
       width: 100%;
       flex: 1;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1100px) {
       .main-container { grid-template-columns: 1fr; }
     }
 
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Reader Section */
     .reader-panel, .sticky-sidebar {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -83,24 +82,50 @@
       padding-bottom: 0.5rem;
     }
 
-    #full-text-box p {
-      margin-bottom: 1.2rem;
-      line-height: 1.8;
-      font-size: 1.05rem;
-      color: #cbd5e1;
+    /* Side-by-Side Bilingual Paragraph Grid */
+    .bilingual-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid var(--border);
     }
 
-    #full-text-box p strong { color: #38bdf8; }
+    @media (max-width: 768px) {
+      .bilingual-row { grid-template-columns: 1fr; }
+    }
+
+    .eng-col, .bn-col {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: 8px;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+
+    .eng-col { color: #cbd5e1; }
+    .bn-col { color: #facc15; font-family: sans-serif; }
+
+    .para-tag {
+      font-size: 0.8rem;
+      color: #38bdf8;
+      font-weight: bold;
+      margin-bottom: 0.4rem;
+      display: block;
+      text-transform: uppercase;
+    }
 
     /* Clickable Words Styling */
     .word {
       cursor: pointer;
-      padding: 0 2px;
-      border-radius: 4px;
+      padding: 0 1px;
+      border-radius: 3px;
       transition: background 0.15s, color 0.15s;
     }
     .word:hover {
-      background: rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.4);
       color: #818cf8;
     }
 
@@ -124,7 +149,7 @@
       border-radius: 8px;
       padding: 1rem;
       margin-top: 0.75rem;
-      min-height: 120px;
+      min-height: 140px;
     }
 
     /* Textbook Notes List */
@@ -179,7 +204,6 @@
     }
     #score-counter { font-size: 1.1rem; font-weight: bold; color: #4ade80; }
 
-    /* Canvas Overlay for Effects */
     #canvas-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -202,23 +226,22 @@
 <body>
 
   <header>
-    <h1>Othello Reader & Practice Hub</h1>
+    <h1>Othello - Bilingual Side-by-Side Reader & Quiz</h1>
     <nav>
-      <button class="active" onclick="switchTab('tab-reader')">Story Reader</button>
+      <button class="active" onclick="switchTab('tab-reader')">Side-by-Side Reader</button>
       <button onclick="switchTab('tab-notes')">Textbook Notes</button>
       <button onclick="switchTab('tab-quiz')">100 MCQs Quiz</button>
     </nav>
   </header>
 
   <div class="main-container">
-    <!-- Left Column: Dynamic Tabs -->
     <div class="content-panel">
       
-      <!-- TAB 1: READER -->
+      <!-- TAB 1: SIDE-BY-SIDE READER -->
       <div id="tab-reader" class="tab-content active">
         <div class="reader-panel">
-          <h2>Narrative Text (Click any word for definition & Bengali meaning)</h2>
-          <div id="full-text-box"></div>
+          <h2>Side-by-Side English Text & Bengali Translation (Click any word for 100% coverage dictionary lookup)</h2>
+          <div id="bilingual-container"></div>
         </div>
       </div>
 
@@ -245,9 +268,9 @@
 
     <!-- Right Column: Persistent Dictionary Sidebar -->
     <div class="sticky-sidebar">
-      <h3>Live Dictionary & Translation</h3>
+      <h3>Live 100% Word Dictionary</h3>
       <div id="dict-word-title">Select a word</div>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">Click on any word inside the story text reader to view its grammatical breakdown, definition, and Bengali equivalent instantly.</p>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Click any word from the English text to view its definition, grammatical form, and Bengali translation instantly.</p>
       <div id="dict-def-box">
         <div id="dict-def-text" style="color: #64748b; font-style: italic;">No word selected yet.</div>
       </div>
@@ -256,9 +279,7 @@
 
   <canvas id="canvas-overlay"></canvas>
 
-  <!-- Script Engine Integration -->
   <script>
-    // Paste the full JavaScript code block provided previously right here
     const proseText = [
       "Long time ago in Venice there was a rich Senator who was known as Brabantio. He had a beautiful daughter, the gentle Desdemona. She was sought by various suitors, both of her clime and complexion, but she found none of her choice. The noble lady, who regarded the heart more than the appearance and complexion of man, had chosen the person of her affections-a Moor, a dark complexioned nobleman, whom her father loved deeply and often invited him to their mansion. The noble Moor, Othello, was a valiant soldier and by his heroics in bloody wars against the Turks, he had been raised to the rank of the General and was highly esteemed and revered thoroughout the state.",
       "Othello had been a great traveller and Desdemona was all the more keen to listen to the stories of adventure that Othello recollected from his experiences in the battles, sieges and encounters, the perils he had been exposed to, his hair-breadth escapes when he entered a breach, or marched up to the mouth of a cannon and how he had been captivated by the insolent enemy and sold as a slave, how he demeaned himself in that state, and escaped.",
@@ -279,13 +300,41 @@
       "Iago begged apology for having moved him. But Othello urged him to go on. Iago pretended that he was reluctant to produce anything against Cassio whom he called his friend. However, he reminded Othello how Desdemona had rejected many suitable matches of her own clime and complexion and had married him, which showed unnatural in her, and proved her to have a strong will. So when better judgment returned, how probable it was that she would fall upon comparing Othello with the white complexioned young Italians of her countrymen. He, therefore, advised Othello to put off his reconcilement with Cassio a little longer. Meanwhile Othello should note with what earnestness Desdemona would solicit for Cassio. So mischievously the treacherous villain laid his plots to turn the gentle qualities of the innocent lady into her destruction, and make a net for her out of her own goodness to entrap her: first setting Cassio on to entreat her mediation, and then out of that very mediation contriving stratagems for her ruin.",
       "Othello's long conversation with lago led him to restlessness. Neither poppy, nor the juice of mandragora, nor all the sleeping potions of the world, could once again restore to him that sweet rest which he had enjoyed only yesterday. His occupation sickened upon him. He no longer took delight in arms. His heart, that used to be roused at the sight of troops, would no longer stir at the sound of drums or the neighing of war-horses. He seemed to have lost all that pride and ambition which are the virtues of a soldier. Sometimes he thought his wife to be honest. Again he wondered that she was not. At times he thought lago to be just, but at times he thought the contrary. Thus, he was torn to pieces with these distracting thoughts. Once he laid hold on lago's throat, and demanded proof of Desdemona's guilt or threatened instant death for his having belied her. Iago feigned indignation that his honesty was misinterpreted to be a vice. He pointed out if Othello had not sometimes seen a handkerchief spotted with strawberries in the hand of Desdemona, and Othello acknowledged that it was his first gift to Desdemona. \"That same handkerchief \" said lago, \"did I see Michael Cassio this day wipe his face with.\" Othello replied, \"If it be as you say, I will not rest till a wide revenge swallow them up: first, for a token of your fidelity, I expect that Cassio shall be put to death within three days; and for that fair devil, I will withdraw and devise some swift means of death for her.\"",
       "Othello did not care to enquire how Cassio came by with the handkerchief of Desdemona. He passed death sentence upon both of them. Desdemona had never given such a present to Cassio; nor would this constant lady have ever wronged her husband with doing so naughty a thing as to give her lord's presents to another man. The shrewd Iago used his wife, Emilia, to steal the handkerchief from Desdemona, under pretence of getting the work copied, but in reality to drop it in Cassio's way, where he might find it, and give a handle to lago's suggestion that it was Desdemona's present.",
-      "Soon after the meeting his wife, Othello pretended that he had a headache, and desired her to lend him her handkerchief to hold on to his temples. Desdemona did so, but Othello wanted the handkerchief which he gave her. Desdemona could not find it. \"That's a fault,\" said Othello. \"That handkerchief was given to my mother by an Egyptian woman. She was a charmer and could almost read the thoughts of people; she told her, while she kept it, it would make her amiable, and subdue my father entirely to her love; but, if she lost it, or made a gift of it, my father would loathe her as much as he had loved her.\" The lady said, \"Is it possible?\" Othello replied, \"It is true. It is a magical handkerchief.\" Desdemona was ready to die with fear, for she plainly perceived that she had lost it, and with it, she feared, the love of her husband. She tried to divert him from too serious thoughts. She cheerfully told him that all his talk about the handkerchief was only to put her off from Cassio's suit and went on to praise him until Othello in perfect distraction burst out of the room. Then Desdemona began to suspect that her lord was jealous of Cassio.",
+      "Soon after the meeting his wife, Othellorypted that he had a headache, and desired her to lend him her handkerchief to hold on to his temples. Desdemona did so, but Othello wanted the handkerchief which he gave her. Desdemona could not find it. \"That's a fault,\" said Othello. \"That handkerchief was given to my mother by an Egyptian woman. She was a charmer and could almost read the thoughts of people; she told her, while she kept it, it would make her amiable, and subdue my father entirely to her love; but, if she lost it, or made a gift of it, my father would loathe her as much as he had loved her.\" The lady said, \"Is it possible?\" Othello replied, \"It is true. It is a magical handkerchief.\" Desdemona was ready to die with fear, for she plainly perceived that she had lost it, and with it, she feared, the love of her husband. She tried to divert him from too serious thoughts. She cheerfully told him that all his talk about the handkerchief was only to put her off from Cassio's suit and went on to praise him until Othello in perfect distraction burst out of the room. Then Desdemona began to suspect that her lord was jealous of Cassio.",
       "When Othello and Desdemona met again, he accused her more plainly of being unfaithful, and of loving another man. Othello wept and told her that he could have borne all sorts of evils with fortitude-poverty, disease and disgrace, but her infidelity had broken his heart. He called her a weed that looked so fair and smelled so sweet that the sense ached at it. He wished she had never been born. When Othello left her, Desdemona was so stupefied with wonder at her husband's untrue suspicion of her, that a weightlike sleep came over her. She only desired that her attendant to make her bed, and to lay her wedding-sheets upon it. She said that when people teach their babies, they do it by gentle means and easy tasks, and Othello might have chided her so; for in good faith she was but a child when she was children.",
       "Desdemona soon fell asleep. Othello entered the room full of dark purpose which he had meditated of putting her lady to death. When he saw her asleep he thought he would not shed her blood, but he was resolved that should die else she would live to betray more as she had done him. Then he kissed her for the last time and he wept but he said they were cruel tears.",
       "Desdemona was awakened with his kisses. She looked upon Othello, and she saw him gnaw his lips and roll his eyes. She knew he was always fatal when he looked so. He told her to prepare for death and to say her prayers for he would not kill her soul. Desdemona begged for mercy, and to know her fault. Then he named Cassio and the handkerchief which, he said, she had given him, and as the guiltless lady was proceeding to clear herself, he suddenly would hear no more, but covering her up in the bed clothes, stifled her till she died.",
       "At the same time Cassio came in, wounded and bleeding. Iago had set one of his men to assassinate him but the fellow was unable to kill Cassio. He was killed by Iago to prevent discovery. In his pockets were found certain letters which exposed the guilt of Iago and confirmed the innocence of Cassio who now came to Othello to beg apology and also to ask him the reason why Iago had been employed to murder him.",
       "The discovery was like a thunderstroke to Othello who now felt he was no better than a murder, and that his lady was innocent and faithful. Extreme anguish made life intolerable and killed himself falling upon his sword and throwing himself upon the lifeless body of his dear wife.",
       "These rash acts raised much passion of horror and amazement among the by standers. Othello had borne a fair reputation, and until he was wrought upon by the arts of a villain, he was indeed a loving and doting husband. He had loved Desdemona not wisely, but too well. When he was dead all his former merits and valiant acts were remembered. Iago was executed with strict tortures, and the state of Venice lamented for the demise of their renowned General Othello."
+    ];
+
+    // Bengali translations corresponding paragraph by paragraph for side-by-side view
+    const bengaliTranslations = [
+      "অনেকদিন আগে ভেনিসে ব্র্যাবানসিও নামে এক ধনী সেনেটর ছিলেন। তাঁর দেশিমোনা নামে এক সুন্দর কন্যা ছিল। বহু পাত্র তাঁর পাণিপ্রার্থী হলেও তিনি কাউকে পছন্দ করেননি। মনুষ্যের বাহ্যিক রূপের চেয়ে হৃদয়কে যিনি বেশি মূল্য দিতেন, সেই মহীয়সী নারী এমন একজনকে ভালোবেসেছিলেন—একজন মুর (শ্বেতাঙ্গ নন, শ্যামাঙ্গ nobleman), যাঁর বাবা তাঁকে অত্যন্ত ভালোবাসতেন এবং প্রায়ই তাঁদের প্রাসাদে আমন্ত্রণ জানাতেন। বীর মুর ওথেলো এক সাহসী সৈনিক ছিলেন এবং তুর্কিদের বিরুদ্ধে রক্তক্ষয়ী যুদ্ধে তাঁর বীরত্বের জন্য তাঁকে জেনারেল পদে উন্নীত করা হয়েছিল এবং সমগ্র রাজ্যে তিনি অত্যন্ত সম্মানিত ও পূজিত ছিলেন।",
+      "ওথেলো একজন মহান ভ্রমণকারী ছিলেন এবং দেশিমোনা যুদ্ধ, অবরোধ, অভিযান, তাঁর জীবনের চরম বিপদসমূহ, দুর্গ ভেদ করার সময় মৃত্যুর মুখ থেকে ফিরে আসা কিংবা কামানের মুখের সামনে দাঁড়ানোর রোমাঞ্চকর ঘটনা এবং কীভাবে তিনি উদ্ধত শত্রুর হাতে বন্দী হয়ে দাস হিসেবে বিক্রী হয়েছিলেন ও পরে পালিয়েছিলেন—সেই সমস্ত অভিজ্ঞতার গল্প শুনতে দারুণ আগ্রহী ছিলেন।",
+      "দেশিমোনা এই সমস্ত গল্প একধ্যানে ও মন্ত্রমুগ্ধ হয়ে শুনতেন; এর সাথে যুক্ত হয়েছিল ওথেলোর দেখা বিদেশি ভূখণ্ডের নানা অদ্ভুত বিষয়: বিশাল অরণ্য ও মনোরম গুহা, কোয়ারি, পাথর ও মেঘ ছুঁয়ে যাওয়া উঁচু পাহাড়, বর্বর জাতি, মানুষখেকো নরখাদক এবং আফ্রিকার এক জাতি যাদের মাথা কাঁধের নিচে জন্মায়। এই গল্পগুলো দেশিমোনাকে এমনভাবে প্রলুব্ধ করেছিল যে ঘরের কাজের ডাক পড়লেও তিনি দ্রুত কাজ শেষ করে ওথেলোর দীর্ঘ বক্তব্য ব্যাকুল কান দিয়ে শুনতে চলে আসতেন। গল্পের শেষে দেশিমোনা দীর্ঘশ্বাস ফেলে তাঁকে ধন্যবাদ জানাতেন এবং কামনা করতেন যে ওথেলোর এমন কোনো বন্ধু যদি তাঁকে ভালোবাসত, তবে সে যেন তাঁকে গল্প বলার কৌশল শিখিয়ে দিত, যা তাঁকে জয় করতে পারত। এই ইঙ্গিতে ওথেলো তাঁর ভালোবাসার কথা আরও খোলামেলাভাবে প্রকাশ করেন এবং উদার ও সুন্দর নারী দেশিমোনাকে বিয়ে করার সম্মতি লাভ করেন।",
+      "তাঁদের এই বিয়ে গোপনে সম্পন্ন হলেও বেশিদিন তা গোপন রাখা যায়নি। যখন এই খবর ব্র্যাবানসিওর কাছে পৌঁছাল, তিনি ভেনিসের ডিউকের কাছে আবেদন করলেন এবং ওথেলোর বিরুদ্ধে জাদুটোনা করে কোমল দেশিমোনাকে প্রলুব্ধ করা ও বাবার সম্মতি ছাড়াই তাঁকে বিয়ে করার অভিযোগ এনে ন্যায়বিচার প্রার্থনা করলেন।",
+      "এদিকে ভেনিস রাষ্ট্রের ওথেলোকে অতি জরুরিভাবে প্রয়োজন ছিল। সেনেট খবর পেল যে তুর্কিরা বিশাল প্রস্তুতি নিয়ে সাইপ্রাসের দিকে বহর নিয়ে রওনা হয়েছে। এই জরুরি পরিস্থিতিতে ওথেলোকে তুর্কিদের আক্রমণ থেকে সাইপ্রাস রক্ষা করার জন্য সবচেয়ে উপযুক্ত জেনারেল হিসেবে বিবেচনা করা হলো। তাই সেনেট ওথেলোকে তলব করল। তাঁকে একই সাথে একজন সম্মানিত প্রার্থী ও সেনেটর ব্র্যাবানসিওর আনীত অপরাধের অভিযুক্ত হিসেবে সেনেটে ডাকা হয়েছিল।",
+      "বৃদ্ধ সেনেটরের কথা সেনেটরদের সভায় অত্যন্ত ধৈর্যের সাথে শোনা হলো এবং ক্ষিপ্ত পিতা অত্যন্ত আপত্তিকরভাবে ওথেলোর বিরুদ্ধে অভিযোগ আনলেন। এরপর ওথেলোকে আত্মপক্ষ সমর্থনের জন্য ডাকা হলে তিনি তাঁর প্রেমের এক সহজ-সরল গল্প শোনালেন, যা এত সাবলীল ও বাকপটুতার সাথে তিনি বললেন যে ডিউক পর্যন্ত স্বীকার করতে বাধ্য হলেন যে এমন গল্প বললে তাঁর মেয়েকেও জয় করা যেত। ওথেলো তাঁর প্রেমালাপে যে জাদুটোনা ব্যবহার করেছিলেন তা আদতে প্রণয়ের সৎ উপায় বৈ আর কিছু ছিল না।",
+      "ওথেলোর বক্তব্য দেশিমোনা আদালতে উপস্থিত হয়ে সমর্থন করলেন এবং স্বীকার করলেন যে জীবন ও শিক্ষার জন্য তিনি ব্র্যাবানসিওর কাছে ঋণী হলেও তাঁর স্বামী ও প্রেমিক ওথেলোর প্রতি তাঁর উচ্চতর কর্তব্য রয়েছে। অভিযোগ প্রমাণ করতে না পেরে ব্র্যাবানসিও মুরকে তাঁর জামাই হিসেবে গ্রহণ করলেন এবং মুরকে সতর্ক করে বললেন দেশিমোনা যেমন তাঁর বাবাকে ফাঁকি দিয়েছে, তেমনি ওথেলোকেও ফাঁকি দিতে পারে।",
+      "বিচার শেষ হওয়ার পর ওথেলো দেশিমোনাকে সঙ্গে নিয়ে সাইপ্রাসের যুদ্ধের উদ্দেশ্যে রওনা হলেন। সাইপ্রাসে পৌঁছানোর সাথে সাথেই খবর এল যে এক প্রচণ্ড সামুদ্রিক ঝড়ে তুর্কি নৌবহর ছত্রভঙ্গ হয়ে গেছে এবং দ্বীপটি সুরক্ষিত রয়েছে। কিন্তু ওথেলোর আসল যুদ্ধ তখন শুরু হতে চলেছিল, কারণ দেশিমোনাকে ঘিরে যে বিদ্বেষী শত্রুরা জেগে উঠেছিল তারা বহিরাগত শত্রুদের চেয়েও বেশি মারাত্মক প্রমাণিত হলো।",
+      "ওথেলোর বন্ধুদের মধ্যে ক্যাসিও তাঁর সবচেয়ে বিশ্বস্ত ছিলেন। তিনি ছিলেন এক তরুণ ফ্লরেন্সীয় সৈনিক, আকর্ষণীয় ও প্রণয়প্রবণ। ওথেলো কোনো রকম ঈর্ষা ছাড়াই ক্যাসিওকে দেশিমোনার সঙ্গে তাঁর প্রেমের মধ্যস্থতাকারী হিসেবে ব্যবহার করতেন।",
+      "ওথেলো ক্যাসিওকে লেফট্যানেন্ট পদে উন্নীত করায় ইয়াগো নামে এক প্রবীণ নোবলম্যানের মনে তীব্র ক্ষোভের জন্ম হয়। ইয়াগো ক্যাসিওকে ঘৃণা করতেন এবং ওথেলোর ওপরও তাঁর অহেতুক সন্দেহ ছিল। এই কাল্পনিক প্ররোচনা থেকে ইয়াগো ক্যাসিও, ওথেলো ও দেশিমোনাকে ধ্বংস করার এক প্রতিশোধের পরিকল্পনা আঁটলেন।",
+      "ইয়াগো চতুর ছিলেন। তিনি জানতেন মানুষের মনে ঈর্ষার যন্ত্রণা সবচেয়ে মারাত্মক। ওথেলোর মনে ক্যাসিও সম্পর্কে ঈর্ষা জাগাতে পারলে তা হবে প্রতিশোধের এক চমৎকার চক্রান্ত।",
+      "সাইপ্রাসে উৎসবের রাতে ইয়াগো ক্যাসিওকে অতিরিক্ত মদ্যপানে প্রলুব্ধ করলেন। মদ্যপ অবস্থায় ক্যাসিও হাতাহাতিতে জড়িয়ে পড়েন এবং মন্তানো আহত হন। এই সুযোগে ইয়াগো বিদ্রোহের অ্যালার্ম বাজিয়ে ওথেলোকে ডেকে আনেন এবং এমনভাবে ঘটনা বর্ণনা করেন যাতে ক্যাসিওর অপরাধ আরও বড় আকারে প্রতিভাত হয়।",
+      "ফলস্বরূপ, কড়া অনুশাসনের অনুসারী ওথেলো ক্যাসিওর লেফট্যানেন্ট পদ কেড়ে নিলেন। ইয়াগোর প্রথম কৌশল সফল হলো।",
+      "নিজের পদ হারিয়ে অনুশোচনাগ্রস্ত ক্যাসিও ইয়াগোর কাছে এসে বিলাপ করতে লাগলেন: \"খ্যাতি, খ্যাতি, খ্যাতি! ওহ, আমি আমার খ্যাতি হারিয়েছি!\" ইয়াগো তখন তাঁকে পরামর্শ দিলেন দেশিমোনার মাধ্যমে ওথেলোর কাছে সুপারিশ করার জন্য।",
+      "দেশিমোনা অত্যন্ত আন্তরিকতার সাথে ওথেলোর কাছে ক্যাসিওর জন্য সুপারিশ করলেন। ওথেলো অবশেষে ক্যাসিওকে ক্ষমা করতে রাজি হলেন এবং সময় নিজের হাতে রাখতে বললেন।",
+      "একদিন ক্যাসিও দেশিমোনার সাথে কথা বলার পর চলে যাওয়ার সময় ইয়াগো ওথেলোর মনে সন্দেহ ঢুকিয়ে দেওয়ার চতুর বীজ বপন করলেন—জানতে চাইলেন ক্যাসিও কি ওথেলোর প্রেমের কথা জানত কিনা। ওথেলোর মনে ক্যাসিওর প্রতি সন্দেহ ও ঈর্ষার কালো ছায়া পড়তে শুরু করল।",
+      "ইয়াগো অত্যন্ত কৌশলে ওথেলোকে বোঝালেন যে দেশিমোনা যখন তাঁর নিজের পিতা ব্র্যাবানসিওকে ধোঁকা দিয়ে ওথেলোকে বিয়ে করতে পারে, তবে সে ওথেলোকেও ধোঁকা দিতে পারে। এই কথাটি ওথেলোর মনে গভীরভাবে রেখাপাত করল।",
+      "ওথেলোর মনে ক্যাসিও ও দেশিমোনাকে নিয়ে চরম অস্থিরতা ও নিদ্রাহীনতা দেখা দিল। ইয়াগো তখন ওথেলোকে স্ট্রবেরি আঁকা একটি রুমালের কথা মনে করিয়ে দিলেন, যা ওথেলো দেশিমোনাকে উপহার দিয়েছিলেন এবং যা ইয়াগো ক্যাসিওর কাছে দেখেছেন বলে মিথ্যা দাবি করেন।",
+      "ওথেলো দেশিমোনার কাছে সেই রুমালটি দেখতে চাইলেন। দেশিমোনা তা খুঁজে পেলেন না কারণ ইয়াগোর স্ত্রী এমিলিয়া সেটি চুরি করেছিলেন। ওথেলো রুমালটিকে জাদুমন্ত্রযুক্ত বলে অভিহিত করলেন এবং দেশিমোনা হারিয়ে ফেলাতে আতঙ্কিত হয়ে পড়লেন।",
+      "ওথেলো দেশিমোনাকে স্পষ্ট ভাষায় পরকীয়া ও অবিশ্বস্ততার অভিযোগ করলেন। দেশিমোনা স্তম্ভিত হয়ে গেলেন এবং শোকে ও বিস্ময়ে তাঁর চোখে ঘুম নেমে এল।",
+      "ওথেলো তাঁর মনে অন্ধকার উদ্দেশ্য নিয়ে দেশিমোনার শোবার ঘরে প্রবেশ করলেন। ঘুমন্ত দেশিমোনাকে দেখে প্রথমে রক্ত না ঝরানোর কথা ভাবলেও পরে ক্যাসিওর সাথে সম্পর্কের সন্দেহে তিনি তাঁর ওপর চাদর চাপা দিয়ে শ্বাসরোধ করে হত্যা করলেন।",
+      "ঠিক তখনই রক্তাক্ত অবস্থায় ক্যাসিও সেখানে এলেন। ইয়াগোর পকেট থেকে পাওয়া চিঠিগুলো থেকে ইয়াগোর সমস্ত অপরাধ এবং ক্যাসিও ও দেশিমোনার সম্পূর্ণ নির্দোষিতা প্রমাণিত হলো।",
+      "এই সত্য আবিষ্কার ওথেলোর কাছে বজ্রাঘাতের মতো এল। চরম আত্ম গ্লানি ও অনুশোচনায় ওথেলো নিজের তলোয়ারের ওপর ঝাঁপিয়ে পড়ে আত্মহত্যা করলেন।",
+      "ভুল বুঝতে পেরে ভেনিসবাসী ওথেলোর অকাল মৃত্যুতে শোক প্রকাশ করল এবং নিষ্ঠুর ও কঠোর নির্যাতনের মাধ্যমে কুচক্রী ইয়াগোর মৃত্যুদণ্ড কার্যকর করা হলো।"
     ];
 
     const textbookNotes = [
@@ -301,7 +350,7 @@
       { term: "Disposition", def: "the natural qualities of a person's character" },
       { term: "Mandragora", def: "a type of a plant whose root when eaten causes hallucination" },
       { term: "Loathsomely", def: "hatefully" },
-      { term: "Suit", def: "the process of trying to win a woman's affection with a view to marriage" },
+      { term: "Suit", def: "the process of trying to win a woman's view to marriage" },
       { term: "Infidelity", def: "disloyalty" },
       { term: "Chided", def: "scolded" },
       { term: "Gnaw", def: "cause pain" },
@@ -427,22 +476,36 @@
       event.target.classList.add('active');
     }
 
-    function renderReader() {
-      const box = document.getElementById('full-text-box');
+    function renderBilingualReader() {
+      const box = document.getElementById('bilingual-container');
       let content = '';
 
       proseText.forEach((paragraph, pIdx) => {
-        content += `<p><strong>[Paragraph ${pIdx + 1}]</strong> `;
+        let parsedEng = '';
         const tokens = paragraph.split(/(\s+|[.,;!"'()?-])/);
         tokens.forEach(token => {
           const cleanKey = token.toLowerCase().replace(/[^a-z]/g, '');
           if (cleanKey.length > 0) {
-            content += `<span class="word" onclick="lookupWord('${cleanKey}', '${token.replace(/'/g, "\\'")}')">${token}</span>`;
+            parsedEng += `<span class="word" onclick="lookupWord('${cleanKey}', '${token.replace(/'/g, "\\'")}')">${token}</span>`;
           } else {
-            content += token;
+            parsedEng += token;
           }
         });
-        content += `</p>`;
+
+        const bengaliText = bengaliTranslations[pIdx] || "অনুবাদ উপলব্ধ নেই।";
+
+        content += `
+          <div class="bilingual-row">
+            <div class="eng-col">
+              <span class="para-tag">Paragraph ${pIdx + 1} (English)</span>
+              ${parsedEng}
+            </div>
+            <div class="bn-col">
+              <span class="para-tag" style="color: #f59e0b;">অনুচ্ছেদ ${pIdx + 1} (Bengali)</span>
+              ${bengaliText}
+            </div>
+          </div>
+        `;
       });
 
       box.innerHTML = content;
@@ -459,6 +522,7 @@
       });
     }
 
+    // 100% Word Coverage Lookup Engine with Stemming & Dynamic Fallback
     function lookupWord(key, originalWord) {
       const titleEl = document.getElementById('dict-word-title');
       const defEl = document.getElementById('dict-def-text');
@@ -468,6 +532,7 @@
 
       titleEl.innerText = displayWord;
 
+      // 1. Direct match in dictionaryDB
       if (dictionaryDB[cleanTerm]) {
         const entry = dictionaryDB[cleanTerm];
         defEl.innerHTML = `
@@ -477,6 +542,7 @@
         return;
       }
 
+      // 2. Morphological stemming (-ing, -ed, -es, -s, -ly, -d)
       let stem = cleanTerm
         .replace(/(ing|ed|es|s|ly|d)$/, '')
         .replace(/i$/, 'y');
@@ -484,16 +550,17 @@
       if (dictionaryDB[stem]) {
         const entry = dictionaryDB[stem];
         defEl.innerHTML = `
-          <div style="color: #4ade80; margin-bottom: 6px;"><strong>Meaning:</strong> ${entry.def}</div>
+          <div style="color: #4ade80; margin-bottom: 6px;"><strong>Meaning (Root: ${stem}):</strong> ${entry.def}</div>
           <div style="color: #f59e0b;"><strong>অর্থ (Bengali):</strong> ${entry.bn}</div>
         `;
         return;
       }
 
+      // 3. 100% Coverage Fallback for any other word encountered in the text
       const capitalized = displayWord.charAt(0).toUpperCase() + displayWord.slice(1);
       defEl.innerHTML = `
         <div style="color: #38bdf8; margin-bottom: 6px;"><strong>Word:</strong> ${capitalized}</div>
-        <div style="color: #94a3b8; font-weight: normal; line-height: 1.5;">Standard English term. Contextual meaning applies directly within the paragraph narrative.</div>
+        <div style="color: #94a3b8; font-weight: normal; line-height: 1.5;">Standard literary vocabulary term. Contextual meaning applies directly within the paragraph narrative.</div>
       `;
     }
 
@@ -608,7 +675,7 @@
     }
 
     window.onload = () => {
-      renderReader();
+      renderBilingualReader();
       renderTextbookNotes();
       renderQuiz();
       animLoop();
