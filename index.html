@@ -1,179 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Othello — Complete Textbook Word-for-Word Interactive Reader</title>
-  <style>
-    :root {
-      --bg-main: #0f172a;
-      --bg-card: #1e293b;
-      --bg-card-hover: #334155;
-      --accent-primary: #6366f1;
-      --accent-secondary: #0ea5e9;
-      --accent-gold: #f59e0b;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-color: #334155;
-      --success: #22c55e;
-      --danger: #ef4444;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 100%; height: 100%; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
-
-    #app { display: flex; flex-direction: column; min-height: 100vh; width: 100vw; }
-
-    header { background: #090d16; border-bottom: 1px solid var(--border-color); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-    header h1 { font-size: 1.4rem; font-weight: 700; background: linear-gradient(to right, #818cf8, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    
-    nav { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    nav button { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    nav button:hover, nav button.active { background: var(--accent-primary); border-color: var(--accent-primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-
-    main { flex: 1; width: 100%; max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
-
-    .tab-content { display: none; width: 100%; animation: fadeIn 0.3s ease-in-out; }
-    .tab-content.active { display: block; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-    .reader-grid { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; }
-    @media (max-width: 1024px) { .reader-grid { grid-template-columns: 1fr; } }
-
-    .reader-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 2.5rem; font-size: 1.15rem; line-height: 2.1; color: #cbd5e1; }
-    .reader-box p { margin-bottom: 1.8rem; text-indent: 1.5rem; text-align: justify; }
-    .reader-box span.word { cursor: pointer; border-radius: 4px; padding: 2px 4px; transition: all 0.15s; display: inline-block; }
-    .reader-box span.word:hover { background: var(--accent-secondary); color: #ffffff; font-weight: 600; }
-
-    .dict-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; position: sticky; top: 90px; height: fit-content; }
-    .dict-panel h3 { color: var(--accent-gold); font-size: 1.2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
-    .dict-word { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
-    .dict-def { font-size: 1rem; color: #34d399; font-weight: 600; line-height: 1.6; margin-bottom: 1rem; background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); }
-    
-    .textbook-notes { margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem; }
-    .textbook-notes h4 { color: var(--accent-secondary); margin-bottom: 0.8rem; font-size: 1.1rem; }
-    .notes-list { list-style: none; max-height: 250px; overflow-y: auto; padding-right: 5px; }
-    .notes-list li { margin-bottom: 0.6rem; font-size: 0.95rem; color: var(--text-muted); border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.4rem; cursor: pointer; }
-    .notes-list li:hover { color: var(--accent-gold); }
-    .notes-list strong { color: #f8fafc; }
-
-    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
-    .info-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s; }
-    .info-card:hover { transform: translateY(-3px); border-color: var(--accent-primary); }
-    .info-card h3 { color: var(--accent-secondary); margin-bottom: 0.75rem; font-size: 1.2rem; }
-    .info-card p { color: var(--text-muted); font-size: 1rem; line-height: 1.7; }
-
-    .quiz-bar { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border-color); padding: 1rem 1.5rem; border-radius: 10px; margin-bottom: 2rem; }
-    .quiz-bar span { font-size: 1.1rem; font-weight: 700; color: var(--accent-gold); }
-
-    .mcq-container { display: flex; flex-direction: column; gap: 1.5rem; }
-    .mcq-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; }
-    .mcq-q { font-size: 1.15rem; font-weight: 600; margin-bottom: 1.2rem; color: #fff; }
-    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    @media (max-width: 640px) { .options-grid { grid-template-columns: 1fr; } }
-
-    .opt-btn { background: #0f172a; border: 1px solid var(--border-color); color: var(--text-main); padding: 0.8rem 1rem; border-radius: 8px; text-align: left; cursor: pointer; transition: all 0.2s; font-size: 0.98rem; }
-    .opt-btn:hover:not(:disabled) { background: var(--bg-card-hover); border-color: var(--accent-secondary); }
-    .opt-btn.correct { background: rgba(34, 197, 94, 0.2) !important; border-color: var(--success) !important; color: #4ade80 !important; font-weight: bold; }
-    .opt-btn.wrong { background: rgba(239, 68, 68, 0.2) !important; border-color: var(--danger) !important; color: #f87171 !important; font-weight: bold; }
-
-    #canvas-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
-    .screen-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-    @keyframes shake {
-      10%, 90% { transform: translate3d(-3px, 0, 0); }
-      20%, 80% { transform: translate3d(5px, 0, 0); }
-      30%, 50%, 70% { transform: translate3d(-7px, 0, 0); }
-      40%, 60% { transform: translate3d(7px, 0, 0); }
-    }
-
-    footer { background: #090d16; border-top: 1px solid var(--border-color); text-align: center; padding: 1.5rem; color: var(--text-muted); margin-top: auto; font-size: 0.9rem; }
-  </style>
-</head>
-<body>
-
-<div id="app">
-  <canvas id="canvas-overlay"></canvas>
-
-  <header>
-    <h1>Othello — Complete Unabridged Interactive Reader</h1>
-    <nav>
-      <button class="active" onclick="switchTab('reader-tab')">📖 Full Textbook Reader</button>
-      <button onclick="switchTab('analysis-tab')">🔍 Critical Themes & Notes</button>
-      <button onclick="switchTab('quiz-tab')">🎯 100 MCQ Assessment Engine</button>
-    </nav>
-  </header>
-
-  <main>
-
-    <!-- TAB 1: UNABRIDGED READER -->
-    <div id="reader-tab" class="tab-content active">
-      <div class="reader-grid">
-        <div class="reader-box" id="full-text-box"></div>
-
-        <div class="dict-panel">
-          <h3>Interactive Glossary</h3>
-          <div id="dict-display">
-            <div class="dict-word" id="dict-word-title">Click Any Word</div>
-            <div class="dict-def" id="dict-def-text">Click any word in the story pane or select from the official textbook vocabulary list below.</div>
-          </div>
-          
-          <div class="textbook-notes">
-            <h4>Official Word Notes (Page 20)</h4>
-            <ul class="notes-list" id="notes-list-box"></ul>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 2: CRITICAL ANALYSIS -->
-    <div id="analysis-tab" class="tab-content">
-      <h2 style="margin-bottom: 1.5rem; color: var(--accent-gold);">Act-by-Act Breakdown & Literary Analysis</h2>
-      <div class="grid-2">
-        <div class="info-card">
-          <h3>Act I: Courtship & Accusation in Venice</h3>
-          <p>Brabantio accuses Othello of using spells and magic to win Desdemona. Othello proves to the Senate that his only witchcraft was the artless eloquence of his adventure stories.</p>
-        </div>
-        <div class="info-card">
-          <h3>Act II: The Tempest & Dismissal of Cassio</h3>
-          <p>A violent storm disperses the Ottoman fleet. In Cyprus, Iago tricks Cassio into getting drunk and provoking a brawl, leading Othello to strip Cassio of his rank.</p>
-        </div>
-        <div class="info-card">
-          <h3>Act III: Poisoning the Mind & The Handkerchief</h3>
-          <p>Iago manipulates Cassio's intercession request into proof of infidelity. He gets Emilia to steal the strawberry-patterned magical handkerchief and plants it in Cassio's lodging.</p>
-        </div>
-        <div class="info-card">
-          <h3>Act IV: Jealousy & Accusation</h3>
-          <p>Driven to near madness by Iago's suggestions, Othello confronts Desdemona over the lost handkerchief and directly accuses her of unfaithfulness.</p>
-        </div>
-        <div class="info-card">
-          <h3>Act V: Tragic Climax & Exposure</h3>
-          <p>Othello smothers Desdemona. Cassio and letters found on Roderigo reveal Iago's full villainy. Overwhelmed by remorse, Othello kills himself with his sword.</p>
-        </div>
-        <div class="info-card">
-          <h3>Key Symbol: Strawberry Handkerchief</h3>
-          <p>Given by an Egyptian charmer to Othello's mother, it symbolizes marital fidelity. In Iago's plot, it becomes the crucial "ocular proof" driving the tragedy.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 3: QUIZ ENGINE -->
-    <div id="quiz-tab" class="tab-content">
-      <div class="quiz-bar">
-        <span>Question Coverage: 100 MCQs</span>
-        <span id="score-counter">Current Score: 0 / 0</span>
-      </div>
-      <div class="mcq-container" id="mcq-box"></div>
-    </div>
-
-  </main>
-
-  <footer>
-    <p>© Othello Complete Interactive Study Edition — 100% Word-for-Word Text Coverage</p>
-  </footer>
-</div>
-
-<script>
 // CLEAN 100% UNABRIDGED TEXT extracted directly from Textbook Pages 15 to 19
 const proseText = [
   "Long time ago in Venice there was a rich Senator who was known as Brabantio. He had a beautiful daughter, the gentle Desdemona. She was sought by various suitors, both of her clime and complexion, but she found none of her choice. The noble lady, who regarded the heart more than the appearance and complexion of man, had chosen the person of her affections-a Moor, a dark complexioned nobleman, whom her father loved deeply and often invited him to their mansion. The noble Moor, Othello, was a valiant soldier and by his heroics in bloody wars against the Turks, he had been raised to the rank of the General and was highly esteemed and revered thoroughout the state.",
@@ -225,81 +49,84 @@ const textbookNotes = [
   { term: "Wrought", def: "made" }
 ];
 
-// COMPREHENSIVE DICTIONARY DATABASE (Textbook Notes + Expanded Story-Wide Literary Terms)
+// COMPREHENSIVE DICTIONARY DATABASE WITH BENGALI MEANINGS
 const dictionaryDB = {
-  // Page 20 Official Glossary Notes
-  "siege": { def: "A military operation to capture a town", bn: "সামরিক অবরোধ" },
-  "sieges": { def: "Military operations to capture fortified places", bn: "সামরিক অবরোধসমূহ" },
-  "insolent": { def: "Rude and disrespectful", bn: "উদ্ধত / অবাধ্য" },
-  "anthropophagi": { def: "A mythical race of cannibals", bn: "নৃমাংসভোজী জাতি" },
-  "devour": { def: "Read or listen to some story eagerly", bn: "গ্রাস করা / ব্যাকুল হয়ে শোনা" },
-  "seduce": { def: "Persuade someone to do something unwise", bn: "প্রলুব্ধ করা / ভুলিয়ে নেওয়া" },
-  "conjuration": { def: "Make something appear in the mind / magic spell", bn: "মায়াজাল / জাদুটোনা" },
-  "conjurations": { def: "Magic spells or incantations", bn: "মায়াজাল বা জাদুটোনা" },
-  "blemish": { def: "A small flaw or moral fault", bn: "কলঙ্ক / খুঁত" },
-  "dispersion": { def: "Go in different directions", bn: "ছত্রভঙ্গ হওয়া" },
-  "intercession": { def: "The action of intervening on behalf of someone", bn: "সুপারিশ / মধ্যস্থতা" },
-  "disposition": { def: "The natural qualities of a person's character", bn: "স্বভাব / চারিত্রিক মেজাজ" },
-  "dispositions": { def: "Natural qualities or character traits", bn: "স্বভাব বা চরিত্রের ঝোঁক" },
-  "mandragora": { def: "A plant whose root causes hallucination and sleep", bn: "চেতনানাশক বা নিদ্রাকারক উদ্ভিদ" },
-  "loathsomely": { def: "Hatefully or disgustingly", bn: "ঘৃণ্যভাবে" },
-  "suit": { def: "Process of trying to win a woman's affection for marriage", bn: "বিবাহের প্রস্তাব / প্রণয় নিবেদন" },
-  "infidelity": { def: "Disloyalty or unfaithfulness in marriage", bn: "অঅবিশ্বস্ততা / ব্যভিচার" },
-  "chided": { def: "Scolded or reprimanded gently", bn: "তিরস্কার করা / বকা দেওয়া" },
-  "gnaw": { def: "Cause persistent pain or anxiety", bn: "যন্ত্রণা দেওয়া / কামড়ানো" },
-  "wrought": { def: "Manipulated, influenced, or worked upon", bn: "প্রভাবিত করা / চালিত করা" },
-
-  // Expanded Story-Wide Literary Terms
-  "clime": { def: "A region considered with reference to its climate", bn: "দেশ বা অঞ্চল" },
-  "complexion": { def: "Natural color and appearance of the skin", bn: "গায়ের রং / রূপ" },
-  "valiant": { def: "Showing courage or determination; brave", bn: "সাহসী / বীরত্বপূর্ণ" },
-  "heroics": { def: "Brave or dramatic behavior", bn: "বীরত্বপূর্ণ কাজ" },
+  "rich": { def: "Having a great deal of money or assets", bn: "ধনী / সমৃদ্ধ" },
+  "senator": { def: "A member of a senate or governing council", bn: "সেনেটর / রাজ্য পরিষদ সদস্য" },
+  "beautiful": { def: "Pleasing the senses or mind aesthetically", bn: "সুন্দর / মনোহর" },
+  "daughter": { def: "A female child in relation to her parents", bn: "কন্যা / মেয়ে" },
+  "gentle": { def: "Mild, kind, or tender in temperament", bn: "নম্র / ভদ্র / কোমল" },
+  "sought": { def: "Attempted to find or obtain (past of seek)", bn: "খোঁজ করা হয়েছিল / চাওয়া হয়েছিল" },
+  "suitors": { def: "Men who pursue a woman with a view to marriage", bn: "প্রণয়ী / বিবাহের পাত্র" },
+  "clime": { def: "A country or region with a particular climate", bn: "দেশ / অঞ্চল" },
+  "complexion": { def: "Natural skin tone or appearance", bn: "গায়ের রং / রূপ" },
+  "valiant": { def: "Possessing or showing courage or determination", bn: "সাহসী / বীরত্বপূর্ণ" },
+  "heroics": { def: "Brave or heroic behavior", bn: "বীরত্বপূর্ণ কাজ" },
   "esteemed": { def: "Highly respected and admired", bn: "শ্রদ্ধেয় / সম্মানিত" },
   "revered": { def: "Deeply respected or venerated", bn: "পরম পূজনীয়" },
-  "perils": { def: "Serious and immediate dangers", bn: "বিপদ / ঝুঁকি" },
-  "peril": { def: "Serious danger", bn: "বিপদ" },
+  "perils": { def: "Serious and immediate dangers", bn: "চরম বিপদ / ঝুঁকি" },
+  "peril": { def: "Serious and immediate danger", bn: "বিপদ" },
   "breach": { def: "A gap in a wall or fortification made by an enemy", bn: "দেয়ালের ফাটল / ভাঙন" },
-  "captivated": { def: "Attracted and held the interest of", bn: "প্রেমজালে আবদ্ধ / মোহিত" },
-  "demeaned": { def: "Loss of dignity or respect", bn: "হেয় করা / মর্যাদাহানি করা" },
+  "captivated": { def: "Attracted and held the interest of", bn: "বন্দী / মোহিত" },
+  "insolent": { def: "Showing a rude and arrogant lack of respect", bn: "উদ্ধত / অবাধ্য" },
+  "demeaned": { def: "Severe loss of dignity or respect", bn: "হেয় করা / মর্যাদাহানি করা" },
   "rapt": { def: "Completely fascinated by what one is hearing", bn: "একধ্যানে / মন্ত্রমুগ্ধ" },
+  "anthropophagi": { def: "Mythical race of man-eaters / cannibals", bn: "নৃমাংসভোজী জাতি" },
   "enticed": { def: "Attracted or tempted by offering pleasure", bn: "প্রলুব্ধ করেছিল" },
-  "discourse": { def: "Written or spoken speech", bn: "কথোপকথন / ভাষণ" },
-  "frankness": { def: "The quality of being open and honest", bn: "স্পষ্টবাদিতা / সরলতা" },
-  "solemnized": { def: "Performed a formal ceremony", bn: "আনুষ্ঠানিকভাবে সম্পন্ন" },
-  "witchcraft": { def: "The practice of magic or sorcery", bn: "জাদুটোনা / কুহক" },
-  "hostility": { def: "Unfriendly or aggressive behavior", bn: "শত্রুতা / আক্রমণ" },
+  "discourse": { def: "Written or spoken communication or speech", bn: "দীর্ঘ বক্তব্য / কথোপকথন" },
+  "devour": { def: "Read, listen to, or absorb eagerly", bn: "গ্রাস করা / ব্যাকুল হয়ে শোনা" },
+  "frankness": { def: "The quality of being open, honest, and direct", bn: "স্পষ্টবাদিতা / সরলতা" },
+  "solemnized": { def: "Performed a formal ceremony (especially marriage)", bn: "আনুষ্ঠানিকভাবে উদযাপিত" },
+  "seduce": { def: "Persuade someone to do something unwise or wrong", bn: "প্রলুব্ধ করা / ভুলিয়ে নেওয়া" },
+  "conjuration": { def: "Magic spell or incantation", bn: "মায়াজাল / জাদুটোনা" },
+  "conjurations": { def: "Magic spells or incantations", bn: "মায়াজাল বা জাদুটোনা" },
+  "hostility": { def: "Unfriendly or aggressive behavior; warfare", bn: "শত্রুতা / আক্রমণ" },
   "deemed": { def: "Regarded or considered in a specified way", bn: "বিবেচিত / গণ্য করা" },
-  "competent": { def: "Having the necessary ability or skill", bn: "দক্ষ / উপযুক্ত" },
-  "infuriated": { def: "Extremely angry; enraged", bn: "ক্ষুব্ধ / অত্যন্ত ক্রুদ্ধ" },
+  "competent": { def: "Having the necessary ability, knowledge, or skill", bn: "দক্ষ / উপযুক্ত" },
+  "infuriated": { def: "Extremely angry; enraged", bn: "অত্যন্ত ক্রুদ্ধ / ক্ষিপ্ত" },
   "artless": { def: "Sincere, simple, and free from deceit", bn: "সহজ-সরল / ছলনামুক্ত" },
-  "eloquence": { def: "Fluent or persuasive speaking or writing", bn: "বাকপটুতা / সাবলীলতা" },
+  "eloquence": { def: "Fluent or persuasive speaking or writing", bn: "বাকপটুতা / সাবলীল বক্তব্য" },
   "clogs": { def: "Heavy encumbrances or hindrances", bn: "বাধা / শৃঙ্খল" },
-  "desertion": { def: "The action of abandoning a duty or person", bn: "ত্যাগ / পলায়ন" },
+  "desertion": { def: "The action of deserting a person or cause", bn: "ত্যাগ / পলায়ন" },
   "tempest": { def: "A violent windy storm at sea", bn: "প্রচণ্ড সামুদ্রিক ঝড়" },
-  "malice": { def: "Intention or desire to do evil", bn: "বিদ্বেষ / হিংসা" },
-  "infidels": { def: "Unbelievers or hostile enemies", bn: "বিধর্মী / শত্রু" },
-  "amorous": { def: "Showing or feeling romantic desire", bn: "প্রণয়াসক্ত / অনুরাগী" },
-  "scorn": { def: "Feel or express contempt for", bn: "অবজ্ঞা করা / ঘৃণা করা" },
-  "provocations": { def: "Actions that make someone angry", bn: "প্ররোচনা / উসকানি" },
-  "afflictions": { def: "Causes of great pain or distress", bn: "দুঃখ-কষ্ট / যন্ত্রণা" },
-  "restrain": { def: "Keep under control", bn: "সংবরণ করা / আটকানো" },
-  "guile": { def: "Sly or cunning intelligence", bn: "চাতুরী / ছলনা" },
+  "dispersed": { def: "Go or drive off in different directions", bn: "ছত্রভঙ্গ হয়ে যাওয়া" },
+  "dispersion": { def: "Go in different directions", bn: "ছত্রভঙ্গ হওয়া" },
+  "malice": { def: "The intention or desire to do evil; ill will", bn: "বিদ্বেষ / হিংসা" },
+  "infidels": { def: "Unbelievers or hostile non-believers", bn: "কাফের / শত্রু" },
+  "amorous": { def: "Showing, feeling, or relating to romantic desire", bn: "অনুরাগী / প্রণয়াসক্ত" },
+  "blemish": { def: "A small mark, flaw, or moral fault", bn: "কলঙ্ক / খুঁত" },
+  "scorn": { def: "Feel or express contempt or derision for", bn: "অবজ্ঞা করা / ঘৃণা করা" },
+  "provocations": { def: "Actions that make someone annoyed or angry", bn: "প্ররোচনা / উসকানি" },
+  "afflictions": { def: "Causes of persistent pain or distress", bn: "দুঃখ-কষ্ট / যন্ত্রণা" },
+  "restrain": { def: "Prevent from doing something or keep under control", bn: "সংবরণ করা / আটকানো" },
+  "guile": { def: "Sly or cunning intelligence; deception", bn: "চাতুরী / ছলনা" },
   "exquisite": { def: "Extremely beautiful and delicate", bn: "চমৎকার / অতি সূক্ষ্ম" },
-  "scuffle": { def: "A short, confused fight", bn: "হাতাহাতি / দাঙ্গা" },
-  "artifice": { def: "Clever devices used to trick others", bn: "চাতুরী / ফন্দি" },
-  "bestial": { def: "Savagely cruel and depraved", bn: "পশুতুল্য / বর্বর" },
-  "solicitor": { def: "One who advocates on behalf of another", bn: "সুপারিশকারী" },
-  "penitent": { def: "Feeling sorrow for wrongdoing", bn: "অনুশোচনাগ্রস্ত" },
-  "indignation": { def: "Anger aroused by unfair treatment", bn: "তীব্র অসন্তোষ / ক্ষোভ" },
-  "fidelity": { def: "Faithfulness to a person or belief", bn: "বিশ্বস্ততা / একনিষ্ঠতা" },
-  "amiable": { def: "Friendly and pleasant manner", bn: "সদ্বভাবাপন্ন / স্নেহময়ী" },
-  "fortitude": { def: "Courage in pain or adversity", bn: "ধৈর্য / সহ্যশক্তি" },
-  "stupefied": { def: "Astonished and rendered unable to think", bn: "হতবাক / স্তম্ভিত" },
-  "stifled": { def: "Suffocated or smothered to death", bn: "শ্বাসরোধ করেছিল" },
+  "scuffle": { def: "A short, confused fight or struggle", bn: "হাতাহাতি / দাঙ্গা" },
+  "artifice": { def: "Clever devices or stratagems used to trick", bn: "কৌশল / ফন্দি" },
+  "bestial": { def: "Savagely cruel and depraved; animal-like", bn: "পশুতুল্য / বর্বর" },
+  "solicitor": { def: "One who advocates or pleads on behalf of another", bn: "প্রস্তাবক / সুপারিশকারী" },
+  "penitent": { def: "Feeling or showing sorrow for wrongdoing", bn: "অনুশোচনাগ্রস্ত" },
+  "intercession": { def: "The action of intervening on behalf of another", bn: "সুপারিশ / মধ্যস্থতা" },
+  "mandragora": { def: "Plant root producing hallucinogenic narcotic sleep", bn: "চেতনাশূন্যকারী আফিম জাতীয় উদ্ভিদ" },
+  "indignation": { def: "Anger aroused by what is perceived as unfair treatment", bn: "তীব্র অসন্তোষ / ক্ষোভ" },
+  "fidelity": { def: "Faithfulness to a person, cause, or belief", bn: "বিশ্বস্ততা / একনিষ্ঠতা" },
+  "amiable": { def: "Having or displaying a friendly and pleasant manner", bn: "সদ্বভাবাপন্ন / স্নেহময়ী" },
+  "fortitude": { def: "Courage in pain or adversity", bn: "সহ্যশক্তি / মানসিক বল" },
+  "stupefied": { def: "Astonished and rendered unable to think clearly", bn: "হতবাক / স্তম্ভিত" },
+  "chided": { def: "Scolded or reprimanded gently", bn: "তিরস্কার করা / গালমন্দ করা" },
+  "gnaw": { def: "Cause persistent distress or anxiety", bn: "যন্ত্রণা দেওয়া / দংশন করা" },
+  "stifled": { def: "Suffocated or smothered to death", bn: "শ্বাসরোধ করে মারা" },
+  "wrought": { def: "Worked upon or influenced by cunning arts", bn: "চলিত / প্রভাবিত" },
   "demise": { def: "A person's death", bn: "মৃত্যু / প্রয়াণ" },
-  "strict": { def: "Severe or rigorous", bn: "কঠোর / নিদারুণ" },
-  "tortures": { def: "Infliction of severe physical agony", bn: "শারীরিক বা মানসিক যন্ত্রণা" },
-  "torture": { def: "Severe physical or mental suffering", bn: "যাতনা / নির্যাতন" }
+  "strict": { def: "Severe, rigorous, or unrelenting", bn: "কঠোর / নিদারুণ" },
+  "tortures": { def: "Infliction of severe physical or mental agony", bn: "শারীরিক বা মানসিক নির্যাতন" },
+  "siege": { def: "A military operation to capture a town", bn: "সামরিক অবরোধ" },
+  "sieges": { def: "Military operations to capture fortified places", bn: "সামরিক অবরোধসমূহ" },
+  "loathsomely": { def: "Hatefully or disgustingly", bn: "ঘৃণ্যভাবে" },
+  "suit": { def: "Process of trying to win a woman's affection for marriage", bn: "বিবাহের প্রস্তাব / প্রণয় নিবেদন" },
+  "infidelity": { def: "Disloyalty or unfaithfulness in marriage", bn: "অবিশ্বস্ততা / ব্যভিচার" },
+  "disposition": { def: "The natural qualities of a person's character", bn: "স্বভাব / চারিত্রিক মেজাজ" },
+  "dispositions": { def: "Natural qualities or character traits", bn: "স্বভাব বা চরিত্রের ঝোঁক" }
 };
 
 // 100 MCQS COVERING THE WHOLE TEXTBOOK STORY
@@ -384,27 +211,36 @@ function lookupWord(key, originalWord) {
 
   titleEl.innerText = displayWord;
 
+  // 1. Direct Lookup
   if (dictionaryDB[cleanTerm]) {
     const entry = dictionaryDB[cleanTerm];
     defEl.innerHTML = `
       <div style="color: #4ade80; margin-bottom: 6px;"><strong>Meaning:</strong> ${entry.def}</div>
       <div style="color: #f59e0b;"><strong>অর্থ (Bengali):</strong> ${entry.bn}</div>
     `;
-  } else {
-    // Morphological Fallback (checks base singular / uninflected forms)
-    let baseForm = cleanTerm.replace(/(ing|ed|es|s)$/, '');
-    if (dictionaryDB[baseForm]) {
-      const entry = dictionaryDB[baseForm];
-      defEl.innerHTML = `
-        <div style="color: #4ade80; margin-bottom: 6px;"><strong>Meaning:</strong> ${entry.def}</div>
-        <div style="color: #f59e0b;"><strong>অর্থ (Bengali):</strong> ${entry.bn}</div>
-      `;
-    } else {
-      defEl.innerHTML = `
-        <div style="color: #94a3b8; font-weight: normal;">Standard English term. Contextual meaning applies directly within the paragraph narrative.</div>
-      `;
-    }
+    return;
   }
+
+  // 2. Dynamic Stemmer / Fallback for any suffix (-ed, -ing, -s, -es, -ly, -d)
+  let stem = cleanTerm
+    .replace(/(ing|ed|es|s|ly|d)$/, '')
+    .replace(/i$/, 'y'); // e.g. stories -> story
+
+  if (dictionaryDB[stem]) {
+    const entry = dictionaryDB[stem];
+    defEl.innerHTML = `
+      <div style="color: #4ade80; margin-bottom: 6px;"><strong>Meaning:</strong> ${entry.def}</div>
+      <div style="color: #f59e0b;"><strong>অর্থ (Bengali):</strong> ${entry.bn}</div>
+    `;
+    return;
+  }
+
+  // 3. Fallback for proper nouns or standard English words
+  const capitalized = displayWord.charAt(0).toUpperCase() + displayWord.slice(1);
+  defEl.innerHTML = `
+    <div style="color: #38bdf8; margin-bottom: 6px;"><strong>Word:</strong> ${capitalized}</div>
+    <div style="color: #94a3b8; font-weight: normal; line-height: 1.5;">Standard English term. Contextual meaning applies directly within the paragraph narrative.</div>
+  `;
 }
 
 function renderQuiz() {
@@ -523,6 +359,3 @@ window.onload = () => {
   renderQuiz();
   animLoop();
 };
-</script>
-</body>
-</html>
