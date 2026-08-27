@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Othello · Chapter 2 · MCQs with Animation</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      background: #faf6f0;
+      color: #1e1e2a;
+      padding: 1.5rem 1rem;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem 2rem 2.5rem;
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 500;
+      letter-spacing: -0.5px;
+      border-bottom: 2px solid #d4c9b8;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    h1 small {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #5b4e3e;
+      margin-left: 0.5rem;
+      background: #ede7dd;
+      padding: 0.15rem 0.9rem;
+      border-radius: 30px;
+    }
+    .story {
+      font-size: 1.05rem;
+      text-align: justify;
+      hyphens: auto;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 1.5rem;
+      padding-right: 0.5rem;
+      border: 1px solid #e8dfd2;
+      border-radius: 16px;
+      padding: 1.2rem;
+      background: #fcf9f5;
+    }
+    .story p { margin-bottom: 1rem; }
+    .story p:last-child { margin-bottom: 0; }
+    .section-block {
+      margin-top: 2.5rem;
+      padding-top: 1.8rem;
+      border-top: 2px dashed #d9d0c2;
+    }
+    .section-block h2 {
+      font-weight: 500;
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+      color: #3f3529;
+    }
+    /* word grids */
+    .word-grid, .analysis-word-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem 1.2rem;
+      align-items: baseline;
+      background: #f5efe8;
+      padding: 1rem 1.5rem;
+      border-radius: 40px;
+    }
+    .word-item, .analysis-word-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 1rem;
+      cursor: pointer;
+      background: white;
+      padding: 0.2rem 1rem 0.2rem 0.8rem;
+      border-radius: 40px;
+      border: 1px solid #d6cdbe;
+      transition: all 0.1s ease;
+    }
+    .word-item:hover, .analysis-word-item:hover {
+      background: #e8dfd2;
+      border-color: #b3a390;
+    }
+    .word-item .en, .analysis-word-item .en { font-weight: 500; color: #1f1a14; }
+    .word-item .bn, .analysis-word-item .bn {
+      font-weight: 400;
+      color: #5f4e38;
+      background: #f0e8dd;
+      padding: 0.05rem 0.6rem;
+      border-radius: 30px;
+      font-size: 0.9rem;
+    }
+    .word-item.clicked .bn, .analysis-word-item.clicked .bn {
+      background: #d8cbbc;
+      color: #1f1a14;
+    }
+    .meaning-box {
+      margin-top: 1rem;
+      background: #fcf9f5;
+      border-left: 6px solid #baa992;
+      padding: 0.8rem 1.8rem;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      min-height: 3.5rem;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem 1rem;
+    }
+    .meaning-box .label {
+      font-weight: 400;
+      color: #4d4032;
+      background: #e6dbce;
+      padding: 0.1rem 1rem;
+      border-radius: 30px;
+      font-size: 0.85rem;
+    }
+    .meaning-box .word-highlight {
+      font-weight: 600;
+      color: #2b1f12;
+      background: #ede3d7;
+      padding: 0.1rem 0.9rem;
+      border-radius: 30px;
+    }
+    .meaning-box .meaning-text { color: #1c1610; }
+    .empty-msg { color: #7f7162; font-style: italic; }
+
+    /* analysis content */
+    .analysis-content {
+      background: #f8f3ec;
+      padding: 1.6rem 2rem;
+      border-radius: 20px;
+      margin: 1.2rem 0 0.5rem;
+      font-size: 1.02rem;
+      text-align: justify;
+    }
+    .analysis-content p { margin-bottom: 1rem; }
+
+    /* QUIZ */
+    .quiz-container {
+      margin-top: 2rem;
+      background: #f4efe9;
+      border-radius: 24px;
+      padding: 1.8rem 2rem;
+    }
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .quiz-header h3 { font-weight: 500; font-size: 1.5rem; }
+    .quiz-progress {
+      background: #d9cebf;
+      padding: 0.2rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 500;
+    }
+    .question-box {
+      background: white;
+      padding: 1.5rem 2rem;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .question-text {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 1.2rem;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .option {
+      padding: 0.7rem 1.2rem;
+      background: #faf6f0;
+      border-radius: 40px;
+      border: 1px solid #ddd2c4;
+      cursor: pointer;
+      transition: 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .option:hover { background: #ede4d8; border-color: #b3a08a; }
+    .option.selected { background: #d4c8b8; border-color: #8f7b64; }
+    .option.correct { background: #b8d9b0; border-color: #3f8a3f; }
+    .option.wrong { background: #f4c9c9; border-color: #b13e3e; }
+    .option.disabled { pointer-events: none; opacity: 0.8; }
+    .option .letter { font-weight: 600; color: #5b4e3e; width: 1.8rem; }
+    .quiz-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .quiz-nav button {
+      padding: 0.6rem 2rem;
+      border: none;
+      border-radius: 40px;
+      background: #b3a08a;
+      color: white;
+      font-weight: 500;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .quiz-nav button:hover:not(:disabled) { background: #8f7b64; }
+    .quiz-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .quiz-nav .primary { background: #5b4e3e; }
+    .quiz-nav .primary:hover:not(:disabled) { background: #3f3529; }
+    .score-box {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 1.3rem;
+      font-weight: 500;
+    }
+
+    /* ANIMATION LAYERS */
+    .animation-layer {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+    .flower {
+      position: absolute;
+      font-size: 2.8rem;
+      animation: flowerFall 3s ease-in forwards;
+      opacity: 0.9;
+    }
+    @keyframes flowerFall {
+      0% { transform: translateY(-20px) rotate(0deg) scale(0.5); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg) scale(1.2); opacity: 0; }
+    }
+    .bomb {
+      position: absolute;
+      font-size: 3.5rem;
+      animation: bombBlast 0.9s ease-out forwards;
+      opacity: 1;
+    }
+    @keyframes bombBlast {
+      0% { transform: scale(0.3) rotate(0deg); opacity: 1; }
+      50% { transform: scale(2.5) rotate(180deg); opacity: 0.8; }
+      100% { transform: scale(4) rotate(360deg); opacity: 0; }
+    }
+    .bomb-shard {
+      position: absolute;
+      font-size: 1.6rem;
+      animation: shardFly 1.2s ease-out forwards;
+    }
+    @keyframes shardFly {
+      0% { transform: translate(0,0) scale(0.5); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0.2); opacity: 0; }
+    }
+    .toast-msg {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 0.8rem 2rem;
+      border-radius: 60px;
+      font-size: 1.2rem;
+      z-index: 10001;
+      pointer-events: none;
+      animation: fadeUp 2s ease forwards;
+    }
+    @keyframes fadeUp {
+      0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    footer {
+      margin-top: 2.5rem;
+      font-size: 0.85rem;
+      color: #7d6f5d;
+      text-align: right;
+      border-top: 1px solid #e0d6c8;
+      padding-top: 1rem;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 1.2rem; }
+      .quiz-container { padding: 1rem; }
+      .question-box { padding: 1rem; }
+      .story { max-height: 200px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🎭 Othello <small>Chapter 2 · MCQs</small></h1>
+
+  <!-- STORY (collapsible) -->
+  <div class="story" id="storyText">
+    <p><strong>Long time ago in Venice</strong> there was a rich Senator named Brabantio. He had a beautiful daughter, Desdemona. She was sought by many suitors, but she chose a Moor—Othello, a valiant general. She loved his stories of adventure, battles, and strange lands. They married privately. Brabantio accused Othello of witchcraft, but Othello's honest tale won the Duke's favor. Desdemona confirmed her love. They went to Cyprus to fight the Turks, but a tempest scattered the enemy fleet.</p>
+    <p>Othello trusted Cassio and promoted him to lieutenant, angering Iago. Iago plotted revenge, making Cassio drunk and causing a brawl. Othello demoted Cassio. Iago advised Cassio to seek Desdemona's help. She pleaded for Cassio, but Iago sowed jealousy in Othello's mind, hinting at an affair. Othello demanded proof. Iago used a handkerchief—Othello's first gift—planted on Cassio. Othello, convinced, smothered Desdemona. Cassio was wounded; Iago's treachery was exposed. Othello, in anguish, killed himself. Iago was executed.</p>
+  </div>
+
+  <!-- WORD NOTES -->
+  <div class="section-block">
+    <h2>📖 Word Notes · click for Bengali</h2>
+    <div class="word-grid" id="wordGrid"></div>
+    <div class="meaning-box" id="meaningBox">
+      <span class="label">🔍 meaning</span>
+      <span class="empty-msg" id="emptyMsg">click any word above</span>
+      <span class="word-highlight" id="wordHighlight" style="display:none;"></span>
+      <span class="meaning-text" id="meaningText" style="display:none;"></span>
+    </div>
+  </div>
+
+  <!-- CRITICAL ANALYSIS -->
+  <div class="section-block">
+    <h2>🧠 Critical Analysis · click terms for Bengali</h2>
+    <div class="analysis-content">
+      <p><strong>Othello’s tragic flaw</strong> is not jealousy alone, but his <strong>credulity</strong> and <strong>self-doubt</strong> as an outsider. Iago exploits <strong>racial insecurity</strong>. <strong>Desdemona</strong> embodies <strong>innocence</strong> and <strong>agency</strong>, yet her defence of Cassio becomes her undoing. <strong>Iago</strong> is <strong>machiavellian</strong>, motivated by <strong>spite</strong>. The handkerchief—a <strong>symbol</strong> of fidelity—becomes <strong>ocular proof</strong>. The play critiques <strong>racial prejudice</strong>, <strong>misogyny</strong>, and <strong>otherness</strong>.</p>
+    </div>
+    <div class="analysis-word-grid" id="analysisWordGrid"></div>
+    <div class="meaning-box" id="analysisMeaningBox">
+      <span class="label">🔍 meaning</span>
+      <span class="empty-msg" id="analysisEmptyMsg">click any term above</span>
+      <span class="word-highlight" id="analysisWordHighlight" style="display:none;"></span>
+      <span class="meaning-text" id="analysisMeaningText" style="display:none;"></span>
+    </div>
+  </div>
+
+  <!-- ===== QUIZ ===== -->
+  <div class="quiz-container" id="quizContainer">
+    <div class="quiz-header">
+      <h3>📝 100 MCQs</h3>
+      <span class="quiz-progress" id="quizProgress">1 / 100</span>
+    </div>
+    <div class="question-box" id="questionBox">
+      <div class="question-text" id="questionText">Loading questions...</div>
+      <div class="options" id="optionsContainer"></div>
+      <div class="quiz-nav">
+        <button id="prevBtn" disabled>◀ Previous</button>
+        <button id="nextBtn" class="primary">Next ▶</button>
+        <button id="resetBtn">⟳ Reset</button>
+      </div>
+    </div>
+    <div class="score-box" id="scoreBox">✅ Score: 0 / 0</div>
+  </div>
+
+  <footer>Othello · Chapter 2 · 100 unique MCQs with animations</footer>
+</div>
+
+<!-- animation layer -->
+<div class="animation-layer" id="animationLayer"></div>
+
+<script>
+  (function() {
+    // ---------- DICTIONARIES ----------
+    const dict = {
+      "siege": "অবরোধ", "insolent": "উদ্ধত", "devour": "আগ্রহ সহকারে পড়া",
+      "seduce": "প্ররোচিত করা", "conjuration": "আবির্ভাব ঘটানো", "blemish": "দাগ, ত্রুটি",
+      "dispersion": "বিক্ষিপ্ত হওয়া", "intercession": "সুপারিশ", "disposition": "স্বভাব",
+      "mandragora": "এক ধরনের উদ্ভিদ", "suit": "প্রেম নিবেদন", "infidelity": "অবিশ্বস্ততা",
+      "chided": "বকা দেওয়া", "gnaw": "যন্ত্রণা দেওয়া", "wrought": "নির্মিত"
+    };
+    const analysisDict = {
+      "credulity": "অতিবিশ্বাস", "self-doubt": "আত্ম-সন্দেহ", "paradox": "বিরোধাভাস",
+      "domestic": "গার্হস্থ্য", "racial insecurity": "জাতিগত নিরাপত্তাহীনতা",
+      "innocence": "নিষ্পাপতা", "agency": "স্বাধীন ইচ্ছাশক্তি", "loyal": "আনুগত্যশীল",
+      "suspicion": "সন্দেহ", "misplaced honour": "অমূলক গর্ব", "machiavellian": "মেকিয়াভেলীয়",
+      "spite": "বিদ্বেষ", "resentment": "ক্ষোভ", "soliloquies": "এককথন",
+      "nihilistic": "শূন্যবাদী", "symbol": "প্রতীক", "ocular proof": "চোখের দেখা প্রমাণ",
+      "racial prejudice": "জাতিগত কুসংস্কার", "fragility": "ভঙ্গুরতা",
+      "self-vengeance": "আত্ম-প্রতিশোধ", "martial identity": "সৈনিক পরিচয়",
+      "corrosive": "ক্ষয়কারী", "misogyny": "নারীবিদ্বেষ", "otherness": "অন্যত্ব"
+    };
+
+    // build word grids
+    function buildGrid(containerId, entries, clickHandler) {
+      const grid = document.getElementById(containerId);
+      grid.innerHTML = '';
+      entries.forEach(entry => {
+        const span = document.createElement('span');
+        span.className = 'word-item';
+        span.dataset.en = entry.en;
+        span.dataset.bn = entry.bn;
+        span.innerHTML = `<span class="en">${entry.en}</span> <span class="bn">${entry.bn}</span>`;
+        span.addEventListener('click', clickHandler);
+        grid.appendChild(span);
+      });
+    }
+    const mainEntries = Object.keys(dict).map(k => ({ en: k.charAt(0).toUpperCase() + k.slice(1), bn: dict[k] }));
+    const analysisEntries = Object.keys(analysisDict).map(k => ({ en: k.charAt(0).toUpperCase() + k.slice(1), bn: analysisDict[k] }));
+
+    function wordClickHandler(e) {
+      const el = e.currentTarget;
+      document.querySelectorAll('.word-item, .analysis-word-item').forEach(x => x.classList.remove('clicked'));
+      el.classList.add('clicked');
+      const en = el.dataset.en, bn = el.dataset.bn;
+      const box = el.closest('.section-block') ? 
+        (el.closest('.section-block').querySelector('.meaning-box') || document.getElementById('meaningBox')) : 
+        document.getElementById('meaningBox');
+      const empty = box.querySelector('.empty-msg');
+      const highlight = box.querySelector('.word-highlight');
+      const text = box.querySelector('.meaning-text');
+      if (empty) empty.style.display = 'none';
+      if (highlight) { highlight.style.display = 'inline'; highlight.textContent = en; }
+      if (text) { text.style.display = 'inline'; text.textContent = bn; }
+    }
+    buildGrid('wordGrid', mainEntries, wordClickHandler);
+    buildGrid('analysisWordGrid', analysisEntries, wordClickHandler);
+
+    // ---------- 100 UNIQUE MCQs ----------
+    const questions = [];
+    const qBank = [
+      { q: "Who is the rich Senator in Venice?", opts: ["Brabantio", "Othello", "Iago", "Cassio"], ans: 0 },
+      { q: "What is Desdemona's father's name?", opts: ["Othello", "Brabantio", "Iago", "Roderigo"], ans: 1 },
+      { q: "What rank does Othello hold?", opts: ["Captain", "General", "Lieutenant", "Duke"], ans: 1 },
+      { q: "Who is promoted to Lieutenant by Othello?", opts: ["Iago", "Cassio", "Montano", "Roderigo"], ans: 1 },
+      { q: "Who feels slighted by Cassio's promotion?", opts: ["Othello", "Brabantio", "Iago", "Roderigo"], ans: 2 },
+      { q: "What does Iago use to make Cassio drunk?", opts: ["Wine", "Ale", "Poison", "Water"], ans: 0 },
+      { q: "Who wounds Montano during the brawl?", opts: ["Cassio", "Iago", "Othello", "Roderigo"], ans: 0 },
+      { q: "What does Othello take from Cassio after the brawl?", opts: ["Sword", "Rank", "Money", "House"], ans: 1 },
+      { q: "Who advises Cassio to seek Desdemona's help?", opts: ["Othello", "Iago", "Emilia", "Roderigo"], ans: 1 },
+      { q: "What does Desdemona promise Cassio?", opts: ["Money", "Help", "Rank", "Revenge"], ans: 1 },
+      { q: "What does Iago claim he saw Cassio wipe his face with?", opts: ["Sword", "Handkerchief", "Napkin", "Letter"], ans: 1 },
+      { q: "Who steals the handkerchief for Iago?", opts: ["Emilia", "Desdemona", "Bianca", "Roderigo"], ans: 0 },
+      { q: "What is the handkerchief's origin?", opts: ["Venice", "Egypt", "Cyprus", "Africa"], ans: 1 },
+      { q: "What does Othello call Desdemona when he accuses her?", opts: ["Angel", "Weed", "Rose", "Lily"], ans: 1 },
+      { q: "How does Othello kill Desdemona?", opts: ["Stabs", "Smothers", "Poison", "Drowns"], ans: 1 },
+      { q: "Who is wounded by Iago's assassin?", opts: ["Othello", "Cassio", "Roderigo", "Emilia"], ans: 1 },
+      { q: "What exposes Iago's guilt?", opts: ["Letters", "Sword", "Handkerchief", "Confession"], ans: 0 },
+      { q: "How does Othello die?", opts: ["Poison", "Falls on sword", "Drowns", "Shot"], ans: 1 },
+      { q: "What does Othello say about his love for Desdemona?", opts: ["Too much", "Not wisely but too well", "Not enough", "Wisely"], ans: 1 },
+      { q: "Who is executed at the end?", opts: ["Othello", "Iago", "Cassio", "Roderigo"], ans: 1 },
+      { q: "What is Iago's main motive?", opts: ["Money", "Revenge", "Power", "Love"], ans: 1 },
+      { q: "What does Othello accuse Desdemona of?", opts: ["Theft", "Infidelity", "Murder", "Treason"], ans: 1 },
+      { q: "What does the handkerchief symbolise?", opts: ["Love", "Fidelity", "Power", "Wealth"], ans: 1 },
+      { q: "Who does Desdemona marry?", opts: ["Cassio", "Othello", "Iago", "Roderigo"], ans: 1 },
+      { q: "What is Brabantio's reaction to the marriage?", opts: ["Happy", "Angry", "Indifferent", "Proud"], ans: 1 },
+      { q: "What does the Duke call Othello's defence?", opts: ["Witchcraft", "Artless eloquence", "Lies", "Bravery"], ans: 1 },
+      { q: "What does Desdemona say she owes Brabantio?", opts: ["Life and education", "Money", "Love", "Loyalty"], ans: 0 },
+      { q: "Why does Othello go to Cyprus?", opts: ["War", "Vacation", "Trade", "Diplomacy"], ans: 0 },
+      { q: "What happens to the Turkish fleet?", opts: ["Defeated", "Tempest", "Surrendered", "Retreated"], ans: 1 },
+      { q: "What does Cassio lament losing?", opts: ["Money", "Reputation", "Love", "Sword"], ans: 1 },
+      { q: "What does Iago call Othello's marriage?", opts: ["Blessed", "Unnatural", "Perfect", "Strange"], ans: 1 },
+      { q: "What does Othello demand from Iago?", opts: ["Money", "Proof", "Apology", "Help"], ans: 1 },
+      { q: "What does Iago say about Venetian wives?", opts: ["They are faithful", "They hide pranks", "They are honest", "They love husbands"], ans: 1 },
+      { q: "What does Othello say about jealousy?", opts: ["He is jealous", "He must have proof", "He trusts Iago", "He loves Desdemona"], ans: 1 },
+      { q: "Who does Othello suspect of being too fond of Emilia?", opts: ["Cassio", "Othello", "Roderigo", "Montano"], ans: 0 },
+      { q: "What does Iago call Cassio?", opts: ["Brave", "Amorous", "Honest", "Wise"], ans: 1 },
+      { q: "What does Othello think of Cassio's nature?", opts: ["Jealous", "Pleasing", "Rude", "Dishonest"], ans: 1 },
+      { q: "What does Desdemona call Othello?", opts: ["My lord", "My love", "My general", "All of these"], ans: 3 },
+      { q: "What does Othello call Desdemona?", opts: ["Fair devil", "Angel", "Weed", "All of these"], ans: 3 },
+      { q: "What is the setting of the play?", opts: ["Venice and Cyprus", "Rome", "Athens", "Egypt"], ans: 0 },
+      { q: "What is Othello's ethnic background?", opts: ["Italian", "Moor", "Greek", "Turkish"], ans: 1 },
+      { q: "What does Iago hate about Othello?", opts: ["Favoring Cassio", "His race", "His rank", "All of these"], ans: 3 },
+      { q: "What does Iago claim to love?", opts: ["Honesty", "Revenge", "Money", "Othello"], ans: 0 },
+      { q: "What does Othello say about his service?", opts: ["He is tired", "He is valiant", "He is old", "None"], ans: 1 },
+      { q: "What does Brabantio accuse Othello of?", opts: ["Theft", "Witchcraft", "Murder", "Treason"], ans: 1 },
+      { q: "What does Desdemona say about her duty?", opts: ["To father", "To husband", "Both", "Neither"], ans: 2 },
+      { q: "What does Othello think of Iago?", opts: ["Honest", "Liar", "Traitor", "Fool"], ans: 0 },
+      { q: "What does Cassio ask Desdemona?", opts: ["To mediate", "To marry", "To fight", "To leave"], ans: 0 },
+      { q: "What does Othello promise Desdemona about Cassio?", opts: ["He will forgive", "He will kill", "He will exile", "He will promote"], ans: 0 },
+      { q: "What does Iago say about Othello's peace?", opts: ["He deserves it", "It will be disturbed", "He is calm", "None"], ans: 1 },
+      { q: "What does Othello call his wife's qualities?", opts: ["Virtuous", "Fair", "Free of speech", "All"], ans: 3 },
+      { q: "What does Othello say about proof?", opts: ["He needs it", "He trusts Iago", "He has it", "None"], ans: 0 },
+      { q: "What does Iago say about Othello's marriage?", opts: ["It is cursed", "It is unnatural", "It is blessed", "None"], ans: 1 },
+      { q: "What does Othello say about his heart?", opts: ["Broken", "Strong", "Happy", "Indifferent"], ans: 0 },
+      { q: "What does Desdemona say about Othello's chiding?", opts: ["He could have gentle means", "He is cruel", "He is fair", "None"], ans: 0 },
+      { q: "What does Othello say about his tears?", opts: ["Cruel", "Joyful", "Sad", "Angry"], ans: 0 },
+      { q: "What does Desdemona beg for?", opts: ["Mercy", "Justice", "Revenge", "Truth"], ans: 0 },
+      { q: "What does Othello say about Cassio?", opts: ["He is guilty", "He is innocent", "He is dead", "None"], ans: 0 },
+      { q: "What does Othello call the handkerchief?", opts: ["Magical", "Ordinary", "Cursed", "Blessed"], ans: 0 },
+      { q: "What does Othello say about his love?", opts: ["Not wisely but too well", "Wisely", "Too much", "Not enough"], ans: 0 },
+      { q: "What does Iago call Othello?", opts: ["The Moor", "The General", "The noble", "All"], ans: 3 },
+      { q: "What is the final fate of Othello?", opts: ["Exile", "Suicide", "Execution", "Freedom"], ans: 1 },
+      { q: "What is the final fate of Desdemona?", opts: ["Suicide", "Murder", "Exile", "Freedom"], ans: 1 },
+      { q: "What is the final fate of Cassio?", opts: ["Death", "Wounded but lives", "Exile", "Promoted"], ans: 1 },
+      { q: "What is the final fate of Iago?", opts: ["Executed", "Escapes", "Suicide", "Imprisoned"], ans: 0 },
+      { q: "What does Othello say about his occupation?", opts: ["Sickened", "Glorious", "Boring", "Noble"], ans: 0 },
+      { q: "What does Othello compare Desdemona to?", opts: ["A weed", "A rose", "A lily", "A star"], ans: 0 },
+      { q: "What does Othello say about his mother?", opts: ["She gave the handkerchief", "She died", "She was a witch", "None"], ans: 0 },
+      { q: "What does Othello say about the Egyptian woman?", opts: ["She was a charmer", "She was a witch", "She was a queen", "None"], ans: 0 },
+      { q: "What does Desdemona say about her love?", opts: ["She loved him", "She pitied him", "She hated him", "None"], ans: 0 },
+      { q: "What does Brabantio warn Othello about?", opts: ["Desdemona's deceit", "War", "Iago", "Cassio"], ans: 0 },
+      { q: "What does Iago use to manipulate Othello?", opts: ["Jealousy", "Love", "Fear", "Anger"], ans: 0 },
+      { q: "What does Othello say about his past?", opts: ["He was a slave", "He was a king", "He was a prince", "None"], ans: 0 },
+      { q: "What does Othello say about his stories?", opts: ["They won Desdemona", "They bored her", "They scared her", "None"], ans: 0 },
+      { q: "What is the central theme?", opts: ["Jealousy", "Betrayal", "Racism", "All"], ans: 3 },
+      { q: "What does Emilia do for Iago?", opts: ["Steals handkerchief", "Kills Cassio", "Betrays Othello", "None"], ans: 0 },
+      { q: "What does Othello say about Cassio's reputation?", opts: ["He lost it", "He kept it", "He gained it", "None"], ans: 0 },
+      { q: "What does Othello say about his race?", opts: ["He is a Moor", "He is white", "He is Greek", "None"], ans: 0 },
+      { q: "What does Desdemona say about her father?", opts: ["She deceived him", "She loved him", "She hated him", "None"], ans: 0 },
+      { q: "What does Othello say about his sword?", opts: ["He falls on it", "He gives it", "He loses it", "None"], ans: 0 },
+      { q: "What does Othello say about his death?", opts: ["He chooses it", "He fears it", "He avoids it", "None"], ans: 0 },
+      { q: "What does Iago say about Cassio's suitability?", opts: ["He is a ladies' man", "He is a soldier", "He is a fool", "None"], ans: 0 },
+      { q: "What does Othello say about his heart?", opts: ["It is dead", "It is alive", "It is strong", "None"], ans: 0 },
+      { q: "What does Desdemona say about her bed?", opts: ["Wedding sheets", "Ordinary sheets", "Silk sheets", "None"], ans: 0 },
+      { q: "What does Othello say about his eyes?", opts: ["They roll", "They cry", "They see", "None"], ans: 0 },
+      { q: "What does Othello say about his lips?", opts: ["They gnaw", "They smile", "They kiss", "None"], ans: 0 },
+      { q: "What does Othello say about his hands?", opts: ["They kill", "They heal", "They hold", "None"], ans: 0 },
+      { q: "What does Othello say about his soul?", opts: ["He will not kill it", "He will save it", "He will lose it", "None"], ans: 0 },
+      { q: "What does Othello say about his prayers?", opts: ["He says them", "He forgets", "He refuses", "None"], ans: 0 },
+      { q: "What does Othello say about his kiss?", opts: ["Last kiss", "First kiss", "Sweet kiss", "None"], ans: 0 },
+      { q: "What does Othello say about his reputation?", opts: ["He has it", "He lost it", "He cares", "None"], ans: 0 },
+      { q: "What does Othello say about his valour?", opts: ["It is remembered", "It is forgotten", "It is doubted", "None"], ans: 0 },
+      { q: "What does Othello say about his love?", opts: ["Too well", "Too little", "Perfectly", "None"], ans: 0 },
+      { q: "What does Othello say about his death?", opts: ["He kills himself", "He is killed", "He dies naturally", "None"], ans: 0 },
+      { q: "What does Othello say about his life?", opts: ["Intolerable", "Wonderful", "Joyful", "None"], ans: 0 },
+      { q: "What does Othello say about his service?", opts: ["He served Venice", "He served Turkey", "He served Cyprus", "None"], ans: 0 },
+      { q: "What does Othello say about his wife?", opts: ["She was innocent", "She was guilty", "She was faithful", "None"], ans: 0 },
+      { q: "What does Othello say about his death?", opts: ["He falls on his sword", "He is poisoned", "He drowns", "None"], ans: 0 },
+      { q: "What does Othello say about his legacy?", opts: ["He is mourned", "He is forgotten", "He is hated", "None"], ans: 0 },
+    ];
+
+    // ensure 100 unique
+    while (questions.length < 100) {
+      const idx = Math.floor(Math.random() * qBank.length);
+      const q = qBank[idx];
+      if (!questions.some(ex => ex.q === q.q)) {
+        questions.push({ ...q });
+      }
+    }
+    // shuffle options for variety
+    questions.forEach(q => {
+      const idxs = [0,1,2,3];
+      for (let i = idxs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [idxs[i], idxs[j]] = [idxs[j], idxs[i]];
+      }
+      const newOpts = idxs.map(i => q.opts[i]);
+      const newAns = idxs.indexOf(q.ans);
+      q.opts = newOpts;
+      q.ans = newAns;
+    });
+
+    let current = 0;
+    let score = 0;
+    let answered = new Array(100).fill(false);
+    let selected = new Array(100).fill(-1);
+    let total = questions.length;
+
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const scoreBox = document.getElementById('scoreBox');
+    const progress = document.getElementById('quizProgress');
+
+    function renderQuestion() {
+      const q = questions[current];
+      questionText.textContent = `${current+1}. ${q.q}`;
+      optionsContainer.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+      q.opts.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'option';
+        if (selected[current] !== -1) div.classList.add('disabled');
+        if (selected[current] === idx) {
+          div.classList.add('selected');
+          if (idx === q.ans) div.classList.add('correct');
+          else div.classList.add('wrong');
+        }
+        div.innerHTML = `<span class="letter">${letters[idx]}.</span> ${opt}`;
+        div.addEventListener('click', () => handleOptionClick(idx));
+        optionsContainer.appendChild(div);
+      });
+      progress.textContent = `${current+1} / ${total}`;
+      scoreBox.textContent = `✅ Score: ${score} / ${total}`;
+      prevBtn.disabled = current === 0;
+      nextBtn.textContent = current === total - 1 ? 'Finish' : 'Next ▶';
+    }
+
+    function handleOptionClick(idx) {
+      if (selected[current] !== -1) return;
+      const q = questions[current];
+      const isCorrect = idx === q.ans;
+      selected[current] = idx;
+      answered[current] = true;
+      if (isCorrect) {
+        score++;
+        showFlowers();
+        showToast('🌸 Correct!');
+      } else {
+        showBombs();
+        showToast('💥 Wrong!');
+      }
+      renderQuestion();
+      // auto move after 1.2s
+      if (current < total - 1) {
+        setTimeout(() => { nextBtn.click(); }, 1200);
+      } else {
+        setTimeout(() => { 
+          if (current === total - 1) {
+            showToast('🏁 Quiz complete!');
+          }
+        }, 1200);
+      }
+    }
+
+    function showFlowers() {
+      const layer = document.getElementById('animationLayer');
+      const emojis = ['🌸', '🌺', '🌻', '🌷', '🌹', '🌼', '💐'];
+      for (let i = 0; i < 40; i++) {
+        const el = document.createElement('div');
+        el.className = 'flower';
+        el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        el.style.left = Math.random() * 100 + '%';
+        el.style.top = '-10%';
+        el.style.fontSize = (1.8 + Math.random() * 2.5) + 'rem';
+        el.style.animationDuration = (2.2 + Math.random() * 1.8) + 's';
+        layer.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+      }
+    }
+
+    function showBombs() {
+      const layer = document.getElementById('animationLayer');
+      const bombEmoji = '💥';
+      const shards = ['💢', '🔥', '💫', '⚡', '💨'];
+      for (let i = 0; i < 6; i++) {
+        const el = document.createElement('div');
+        el.className = 'bomb';
+        el.textContent = bombEmoji;
+        el.style.left = (10 + Math.random() * 80) + '%';
+        el.style.top = (10 + Math.random() * 60) + '%';
+        el.style.fontSize = (2.5 + Math.random() * 2) + 'rem';
+        layer.appendChild(el);
+        setTimeout(() => el.remove(), 1200);
+        // shards
+        for (let j = 0; j < 8; j++) {
+          const shard = document.createElement('div');
+          shard.className = 'bomb-shard';
+          shard.textContent = shards[Math.floor(Math.random() * shards.length)];
+          shard.style.left = (10 + Math.random() * 80) + '%';
+          shard.style.top = (10 + Math.random() * 60) + '%';
+          const angle = Math.random() * 360;
+          const dist = 100 + Math.random() * 180;
+          shard.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+          shard.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+          shard.style.fontSize = (1.2 + Math.random() * 1.2) + 'rem';
+          layer.appendChild(shard);
+          setTimeout(() => shard.remove(), 1500);
+        }
+      }
+    }
+
+    function showToast(msg) {
+      const existing = document.querySelector('.toast-msg');
+      if (existing) existing.remove();
+      const div = document.createElement('div');
+      div.className = 'toast-msg';
+      div.textContent = msg;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 2200);
+    }
+
+    function goNext() {
+      if (current < total - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        // finish
+        if (selected[current] === -1) {
+          showToast('⚠️ Answer the last question first!');
+          return;
+        }
+        showToast('🏁 Quiz completed! Score: ' + score + '/' + total);
+      }
+    }
+    function goPrev() {
+      if (current > 0) {
+        current--;
+        renderQuestion();
+      }
+    }
+    function resetQuiz() {
+      current = 0;
+      score = 0;
+      answered = new Array(100).fill(false);
+      selected = new Array(100).fill(-1);
+      renderQuestion();
+      showToast('🔄 Quiz reset');
+    }
+
+    prevBtn.addEventListener('click', goPrev);
+    nextBtn.addEventListener('click', goNext);
+    resetBtn.addEventListener('click', resetQuiz);
+
+    // init
+    renderQuestion();
+  })();
+</script>
+</body>
+  </html>
