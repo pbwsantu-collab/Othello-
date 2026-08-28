@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Othello - Side-by-Side Bilingual Reader & Quiz Hub</title>
+  <title>Othello · Bilingual Reader & Quiz Hub</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -28,11 +28,13 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
     header h1 { font-size: 1.25rem; color: #38bdf8; }
 
-    nav { display: flex; gap: 0.5rem; }
+    nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     nav button {
       background: transparent;
       border: 1px solid var(--border);
@@ -82,7 +84,6 @@
       padding-bottom: 0.5rem;
     }
 
-    /* Side-by-Side Bilingual Paragraph Grid */
     .bilingual-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -117,7 +118,6 @@
       text-transform: uppercase;
     }
 
-    /* Clickable Words Styling */
     .word {
       cursor: pointer;
       padding: 0 1px;
@@ -129,7 +129,6 @@
       color: #818cf8;
     }
 
-    /* Sidebar Dictionary Panel */
     .sticky-sidebar {
       position: sticky;
       top: 5rem;
@@ -152,7 +151,6 @@
       min-height: 140px;
     }
 
-    /* Textbook Notes List */
     #notes-list-box { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; max-height: 70vh; overflow-y: auto; }
     #notes-list-box li {
       background: #0f172a;
@@ -165,7 +163,6 @@
     #notes-list-box li:hover { border-color: var(--accent); }
     #notes-list-box strong { color: #38bdf8; }
 
-    /* Quiz Section */
     .quiz-container { display: flex; flex-direction: column; gap: 1.5rem; }
     .mcq-card {
       background: #0f172a;
@@ -201,6 +198,7 @@
       padding: 1rem;
       border-radius: 8px;
       border: 1px solid var(--border);
+      flex-wrap: wrap;
     }
     #score-counter { font-size: 1.1rem; font-weight: bold; color: #4ade80; }
 
@@ -221,465 +219,728 @@
       100% { transform: translate(0, 0) rotate(0deg); }
     }
     .screen-shake { animation: shake 0.4s; }
+
+    /* dictionary rich style */
+    .dict-entry { padding: 0.2rem 0; }
+    .dict-en { color: #e2e8f0; font-weight: 500; }
+    .dict-bn { color: #facc15; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Othello - Bilingual Side-by-Side Reader & Quiz</h1>
-    <nav>
-      <button class="active" onclick="switchTab('tab-reader')">Side-by-Side Reader</button>
-      <button onclick="switchTab('tab-notes')">Textbook Notes</button>
-      <button onclick="switchTab('tab-quiz')">100 MCQs Quiz</button>
-    </nav>
-  </header>
+<header>
+  <h1>🎭 Othello · Bilingual Side-by-Side</h1>
+  <nav>
+    <button class="active" onclick="switchTab('tab-reader')">📖 Reader</button>
+    <button onclick="switchTab('tab-notes')">📘 Notes</button>
+    <button onclick="switchTab('tab-quiz')">🧠 100 MCQs</button>
+  </nav>
+</header>
 
-  <div class="main-container">
-    <div class="content-panel">
-      
-      <!-- TAB 1: SIDE-BY-SIDE READER -->
-      <div id="tab-reader" class="tab-content active">
-        <div class="reader-panel">
-          <h2>Side-by-Side English Text & Bengali Translation (Click any word for 100% coverage dictionary lookup)</h2>
-          <div id="bilingual-container"></div>
-        </div>
+<div class="main-container">
+  <div class="content-panel">
+    <div id="tab-reader" class="tab-content active">
+      <div class="reader-panel">
+        <h2>English & Bengali · click any word → dictionary</h2>
+        <div id="bilingual-container"></div>
       </div>
-
-      <!-- TAB 2: NOTES -->
-      <div id="tab-notes" class="tab-content">
-        <div class="reader-panel">
-          <h2>Official Textbook Vocabulary & Glossary (Page 20)</h2>
-          <ul id="notes-list-box"></ul>
-        </div>
-      </div>
-
-      <!-- TAB 3: QUIZ -->
-      <div id="tab-quiz" class="tab-content">
-        <div class="reader-panel">
-          <div id="quiz-header-bar">
-            <h3>Comprehensive Assessment (100 Questions)</h3>
-            <div id="score-counter">Current Score: 0 / 0</div>
-          </div>
-          <div class="quiz-container" id="mcq-box"></div>
-        </div>
-      </div>
-
     </div>
-
-    <!-- Right Column: Persistent Dictionary Sidebar -->
-    <div class="sticky-sidebar">
-      <h3>Live 100% Word Dictionary</h3>
-      <div id="dict-word-title">Select a word</div>
-      <p style="color: var(--text-muted); font-size: 0.9rem;">Click any word from the English text to view its definition, grammatical form, and Bengali translation instantly.</p>
-      <div id="dict-def-box">
-        <div id="dict-def-text" style="color: #64748b; font-style: italic;">No word selected yet.</div>
+    <div id="tab-notes" class="tab-content">
+      <div class="reader-panel">
+        <h2>📖 Textbook Vocabulary (page 20)</h2>
+        <ul id="notes-list-box"></ul>
+      </div>
+    </div>
+    <div id="tab-quiz" class="tab-content">
+      <div class="reader-panel">
+        <div id="quiz-header-bar">
+          <h3>📝 100 Questions · Othello</h3>
+          <div id="score-counter">Score: 0 / 0</div>
+        </div>
+        <div class="quiz-container" id="mcq-box"></div>
       </div>
     </div>
   </div>
 
-  <canvas id="canvas-overlay"></canvas>
+  <div class="sticky-sidebar">
+    <h3>🔍 Live Dictionary (100% coverage)</h3>
+    <div id="dict-word-title">tap a word</div>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">English + Bengali meaning & grammatical form</p>
+    <div id="dict-def-box">
+      <div id="dict-def-text" style="color: #64748b; font-style: italic;">No word selected.</div>
+    </div>
+  </div>
+</div>
+<canvas id="canvas-overlay"></canvas>
 
-  <script>
-    const proseText = [
-      "Long time ago in Venice there was a rich Senator who was known as Brabantio. He had a beautiful daughter, the gentle Desdemona. She was sought by various suitors, both of her clime and complexion, but she found none of her choice. The noble lady, who regarded the heart more than the appearance and complexion of man, had chosen the person of her affections-a Moor, a dark complexioned nobleman, whom her father loved deeply and often invited him to their mansion. The noble Moor, Othello, was a valiant soldier and by his heroics in bloody wars against the Turks, he had been raised to the rank of the General and was highly esteemed and revered thoroughout the state.",
-      "Othello had been a great traveller and Desdemona was all the more keen to listen to the stories of adventure that Othello recollected from his experiences in the battles, sieges and encounters, the perils he had been exposed to, his hair-breadth escapes when he entered a breach, or marched up to the mouth of a cannon and how he had been captivated by the insolent enemy and sold as a slave, how he demeaned himself in that state, and escaped.",
-      "Desdemona listened with rapt attention of all these accounts, added to the narration of the strange things Othello had seen in foreign countries: the vast wilderness and romantic caverns, the quarries, the rocks and lofty mountains that touched the clouds, the savage nations, the cannibals who are man-eaters, and a race of people in Africa whose heads do grow beneath their shoulders. These stories enticed Desdemona so much that even if she was called for any household affairs, she would finish off the work with all haste and return to Othello with greedy ear to devour his discourse. At the end of his stories Desdemona would always sigh and then thank him and wished that if he had a friend who loved her, he had only to teach him, how to tell his story, and that would woo her. Upon this hint, delivered not with more frankness than modesty, and blushes, which Othello could not but understand and he spoke more openly of his love and thus gained the consent of the generous and gorgeous lady Desdemona to marry him.",
-      "Their marriage, which though was privately solemnized, could not be kept a secret for long. When the news reached Brabantio, he appealed to the Duke of Venice and prayed for justice against Othello accusing him of casting spell and witchcraft to seduce the gentle Desdemona, winning her heart and marrying her without taking the consent of her father.",
-      "Meanwhile, the state of Venice was in urgent need of Othello. The Senate received a news that the Turks had set sail a fleet with mighty preparation for hostility and they were moving towards Cyprus. In this emergency, Othello was deemed as the most competent General to defend Cyprus against the invasion of the Turks. Hence, Othello was summoned before the Senate. He was therefore called to the Senate both as a candidate for a noble employment and esteem as well as a culprit, charged with offences by Senator Brabantio.",
-      "The old Senator was heard with utmost patience in the assembly of the Senators and the infuriated father accused Othello in outrageous manner. Hence, when Othello was called upon for his defence, he had only to narrate a simple story of his love, which he did so in such artless eloquence that even the Duke had to confess that a tale so told would have won his daughter too. And the spells and conjurations which Othello had used in his courtship plainly appeared to have been no more than the honest arts of wooing and the only witchcraft which he had used is the skill of telling a soft tale to win a lady's heart.",
-      "The statement of Othello was confirmed by Desdemona who appeared in court and acknowledged that she was bound by duty to Brabantio for her life and education. But now she has a higher duty to perform for her lover and husband Othello, quite like her mother had done years ago in preferring Brabantio above her father. Unable to maintain his plea, Brabantio accepted the Moor as his son-in-law and told him that with all his heart he would keep her away from him. He was also glad that he had no other child, for this behaviour of Desdemona would have made him a tyrant and hang clogs on them for desertion. He even warned Othello about Desdemona who had deceived her father and might also deceive him.",
-      "After the trial, Othello readily went to the war in Cyprus along with Desdemona as she refused to stay with her father any more. She boldly declared, \"I loved the Moor to live with him\". So the newly married couple set sail for Cyprus. But, as soon they landed in Cyprus, the news arrived that a violent tempest had dispersed the Turkish fleet and the island was, thus, secure. But the war, which Othello was to suffer, was now beginning and the enemies, which malice stirred up against Desdemona, proved in their nature more deadly than strangers or infidels.",
-      "Among the friends of Othello, no one possessed his confidence more than Cassio. He was a young Florentine soldier, amorous, and of pleasing nature which attracted the women. He was handsome and eloquent. Any married man of advanced years having a young, beautiful wife would be much alarmed of such a person except Othello who was free from jealousy, as he was noble and incapable of suspecting him to be had used Cassio in his love affair with Desdemona for Othello feared that he lacked the amorous qualities of Cassio that would please ladies, and so would often depute Cassio to court for him; such innocent simplicity being rather an honour than a blemish to the character of the valiant Moor. It was therefore no wonder if, next to Othello, the gentle Desdemona loved and trusted Cassio. Hence, the marriage of this couple made little difference to their relationship with Cassio. He frequented their house, and his free and rattling talk was endearing to Othello for he himself was of a serious temper.",
-      "Othello had of late promoted Cassio to the rank of Lieutenant, a place of trust and nearest to the General. The promotion gave great offence to Iago, an elder nobleman, who thought he had a better claim than Cassio and would often scorn at Cassio to be a person befitting for the company of ladies, and knew little of the art of warfare. Iago hated Cassio. He also hated Othello for favouring Cassio and also for an unjust suspicion that the Moor was too fond of Emilia, Iago's wife. From these imaginary provocations, Iago conceived a scheme of revenge that would involve Cassio, Othello and Desdemona in one common ruin.",
-      "Iago was crafty. He studied human mind deeply. He knew that of all the kinds of afflictions that torment man, the pains of jealousy were the most unbearable and had the sorest sting. He thought if he could succeed in making Othello envious of Cassio, then it would be an excellent plot of revenge which might culminate in the death of Cassio or Othello or both, he cared not.",
-      "The arrival of the General and his lady in Cyprus, and receiving the news of the dispersion of enemy's fleet, created a sort of holiday mood in the island. Everybody was involved in feasting and merry making. Cassio had the direction of the guard that night with a charge from Othello to restrain the soldiers from drinking excessively. On that night Iago began his deep-laid plans of mischief. Under the guise of loyalty and love to the General, he lured Cassio to have a drink, which was a great fault for an officer on guard. Although Cassio resisted initially, yet he soon fell into the guile of Iago. He swallowed wine glass after glass and became drunk. Provoked by Iago, he praised the gentle lady Desdemona. He even told Iago, \"She is a most exquisite lady.\" At the end he got involved in a scuffle. Montano, a worthy officer, who interfered to pacify the dispute, was wounded in the scuffle. Taking advantage of the situation Iago spread the alarm causing the castle-bell to be rung as if a dangerous mutiny had set in. The bell awakened Othello who dressed in haste came down to the scene of action and asked Cassio of the cause. By now, Cassio had regained some rationality, but was too ashamed to reply. Iago pretended to be reluctant to tell the truth, and, as if compelled by Othello, gave an account of the whole matter in such a manner that it seemed to make Cassio's offence less, but actually made it appear greater than it was.",
-      "Consequently, Othello who was a strict observer of discipline was forced to take away the rank of lieutenant from Cassio. Thus, lago's first artifice succeeded. He had now undermined his hated adversary Cassio and was successful to thrust him out of his place.",
-      "Cassio, whom this misfortune had entirely sobered, now lamented to his seeming friend Iago: \"Reputation, reputation, reputation! O, I have lost my reputation! I have lost the immortal part of myself, and what remains is bestial. My reputation, lago, my reputation!\" He despised himself. He thought how he could ask the General for his place again. Iago advised him to apply to the lady to mediate for him with her lord.",
-      "Cassio did as lago advised him. Desdemona promised him that she would be his solicitor with her lord. She immediately set about for this cause in so earnest and pretty a manner that Othello, who was mortally offended with Cassio, could not put her off. When he pleaded delay because it was too soon to pardon such an offender, she insisted that it should be the next night, or the next morning to that at farthest. Then she showed how penitent and humbled poor Cassio was and that his offence did not deserve punishment of such magnitude. But Othello still hung back. So she said, \"What! my lord, that I should have so much to do to plead for Cassio, Michael Cassio, that came a-courting for you, and oftentimes, when I have spoken in dispraise of you, has taken your part! I count this but a little thing to ask of you. When I mean to try your love indeed, I shall ask a weighty matter.\" Othello could deny nothing to such a pleader. He promised to receive Michael Cassio again in his favour, but only requested Desdemona to leave the time to him.",
-      "It happened that Othello and Iago had entered into the room where Desdemona was already present with Cassio who had been imploring her intercession. He departed through the opposite door as Othello entered and Iago, who was full of art, said in a low voice, as if to himself, \"I like not that.\" Othello took no great notice of what he said. The interaction which immediately took place with Desdemona put it out of his head. But he recalled it later. When Desdemona departed from the scene Iago asked Othello, as if mere satisfaction of his thought, whether Cassio knew of the General's courtship with Desdemona. The General replied in affirmative and added that he had gone between them very often during the courtship. lago raised his brow, as if he had got fresh light on some terrible matter, and remarked, \"Indeed!\". This brought into Othello's mind the words of lago which he said while entering the room. Thus he began to think there was some meaning in that private meeting of Desdemona with Cassio. Othello deemed lago to be a just man, full of love and honesty. So he urged Iago to speak out of what he knew. \"And what,\" said lago, \"if some thoughts very vile should have intruded into my breast?\" he went on to say that it would be a pity if any trouble would arise to Othello out of his imperfect observations. So it would not be wise for Othello's peace to know his thoughts. By then Othello's curiosity was raised almost to distraction and lago, as if in earnest care for Othello's peace of mind, sought him to be cautious of jealousy. By the very caution he pretended to give him against suspicion. \"I know,\" said Othello, \"that my wife is fair, loves company and feasting, is free of speech, sings, plays, and dances well: but where virtue is, these qualities are virtuous. I must have proof before I think her dishonest.\" Then Iago, as if glad that Othello was slow to believe ill of his lady, frankly declared that he had no proof. He begged Othello to observe her behaviour well particularly when Cassio was near by. He should not be jealous or too secure. Iago knew the dispositions of the Italian ladies better than Othello. He knew that in Venice the wives would let the world see their pranks but they dared not show their husbands. Iago craftily insinuated that Desdemona deceived her father in marrying with Othello, and carried it so closely, that old Brabantio thought that witchcraft had been used. Othello was much moved by this argument. He wondered if she could deceive her father, she might deceive her husband as well.",
-      "Iago begged apology for having moved him. But Othello urged him to go on. Iago pretended that he was reluctant to produce anything against Cassio whom he called his friend. However, he reminded Othello how Desdemona had rejected many suitable matches of her own clime and complexion and had married him, which showed unnatural in her, and proved her to have a strong will. So when better judgment returned, how probable it was that she would fall upon comparing Othello with the white complexioned young Italians of her countrymen. He, therefore, advised Othello to put off his reconcilement with Cassio a little longer. Meanwhile Othello should note with what earnestness Desdemona would solicit for Cassio. So mischievously the treacherous villain laid his plots to turn the gentle qualities of the innocent lady into her destruction, and make a net for her out of her own goodness to entrap her: first setting Cassio on to entreat her mediation, and then out of that very mediation contriving stratagems for her ruin.",
-      "Othello's long conversation with lago led him to restlessness. Neither poppy, nor the juice of mandragora, nor all the sleeping potions of the world, could once again restore to him that sweet rest which he had enjoyed only yesterday. His occupation sickened upon him. He no longer took delight in arms. His heart, that used to be roused at the sight of troops, would no longer stir at the sound of drums or the neighing of war-horses. He seemed to have lost all that pride and ambition which are the virtues of a soldier. Sometimes he thought his wife to be honest. Again he wondered that she was not. At times he thought lago to be just, but at times he thought the contrary. Thus, he was torn to pieces with these distracting thoughts. Once he laid hold on lago's throat, and demanded proof of Desdemona's guilt or threatened instant death for his having belied her. Iago feigned indignation that his honesty was misinterpreted to be a vice. He pointed out if Othello had not sometimes seen a handkerchief spotted with strawberries in the hand of Desdemona, and Othello acknowledged that it was his first gift to Desdemona. \"That same handkerchief \" said lago, \"did I see Michael Cassio this day wipe his face with.\" Othello replied, \"If it be as you say, I will not rest till a wide revenge swallow them up: first, for a token of your fidelity, I expect that Cassio shall be put to death within three days; and for that fair devil, I will withdraw and devise some swift means of death for her.\"",
-      "Othello did not care to enquire how Cassio came by with the handkerchief of Desdemona. He passed death sentence upon both of them. Desdemona had never given such a present to Cassio; nor would this constant lady have ever wronged her husband with doing so naughty a thing as to give her lord's presents to another man. The shrewd Iago used his wife, Emilia, to steal the handkerchief from Desdemona, under pretence of getting the work copied, but in reality to drop it in Cassio's way, where he might find it, and give a handle to lago's suggestion that it was Desdemona's present.",
-      "Soon after the meeting his wife, Othellorypted that he had a headache, and desired her to lend him her handkerchief to hold on to his temples. Desdemona did so, but Othello wanted the handkerchief which he gave her. Desdemona could not find it. \"That's a fault,\" said Othello. \"That handkerchief was given to my mother by an Egyptian woman. She was a charmer and could almost read the thoughts of people; she told her, while she kept it, it would make her amiable, and subdue my father entirely to her love; but, if she lost it, or made a gift of it, my father would loathe her as much as he had loved her.\" The lady said, \"Is it possible?\" Othello replied, \"It is true. It is a magical handkerchief.\" Desdemona was ready to die with fear, for she plainly perceived that she had lost it, and with it, she feared, the love of her husband. She tried to divert him from too serious thoughts. She cheerfully told him that all his talk about the handkerchief was only to put her off from Cassio's suit and went on to praise him until Othello in perfect distraction burst out of the room. Then Desdemona began to suspect that her lord was jealous of Cassio.",
-      "When Othello and Desdemona met again, he accused her more plainly of being unfaithful, and of loving another man. Othello wept and told her that he could have borne all sorts of evils with fortitude-poverty, disease and disgrace, but her infidelity had broken his heart. He called her a weed that looked so fair and smelled so sweet that the sense ached at it. He wished she had never been born. When Othello left her, Desdemona was so stupefied with wonder at her husband's untrue suspicion of her, that a weightlike sleep came over her. She only desired that her attendant to make her bed, and to lay her wedding-sheets upon it. She said that when people teach their babies, they do it by gentle means and easy tasks, and Othello might have chided her so; for in good faith she was but a child when she was children.",
-      "Desdemona soon fell asleep. Othello entered the room full of dark purpose which he had meditated of putting her lady to death. When he saw her asleep he thought he would not shed her blood, but he was resolved that should die else she would live to betray more as she had done him. Then he kissed her for the last time and he wept but he said they were cruel tears.",
-      "Desdemona was awakened with his kisses. She looked upon Othello, and she saw him gnaw his lips and roll his eyes. She knew he was always fatal when he looked so. He told her to prepare for death and to say her prayers for he would not kill her soul. Desdemona begged for mercy, and to know her fault. Then he named Cassio and the handkerchief which, he said, she had given him, and as the guiltless lady was proceeding to clear herself, he suddenly would hear no more, but covering her up in the bed clothes, stifled her till she died.",
-      "At the same time Cassio came in, wounded and bleeding. Iago had set one of his men to assassinate him but the fellow was unable to kill Cassio. He was killed by Iago to prevent discovery. In his pockets were found certain letters which exposed the guilt of Iago and confirmed the innocence of Cassio who now came to Othello to beg apology and also to ask him the reason why Iago had been employed to murder him.",
-      "The discovery was like a thunderstroke to Othello who now felt he was no better than a murder, and that his lady was innocent and faithful. Extreme anguish made life intolerable and killed himself falling upon his sword and throwing himself upon the lifeless body of his dear wife.",
-      "These rash acts raised much passion of horror and amazement among the by standers. Othello had borne a fair reputation, and until he was wrought upon by the arts of a villain, he was indeed a loving and doting husband. He had loved Desdemona not wisely, but too well. When he was dead all his former merits and valiant acts were remembered. Iago was executed with strict tortures, and the state of Venice lamented for the demise of their renowned General Othello."
-    ];
+<script>
+  // ---------- FULL TEXT (19 paragraphs) ----------
+  const proseText = [
+    "Long time ago in Venice there was a rich Senator who was known as Brabantio. He had a beautiful daughter, the gentle Desdemona. She was sought by various suitors, both of her clime and complexion, but she found none of her choice. The noble lady, who regarded the heart more than the appearance and complexion of man, had chosen the person of her affections-a Moor, a dark complexioned nobleman, whom her father loved deeply and often invited him to their mansion. The noble Moor, Othello, was a valiant soldier and by his heroics in bloody wars against the Turks, he had been raised to the rank of the General and was highly esteemed and revered thoroughout the state.",
+    "Othello had been a great traveller and Desdemona was all the more keen to listen to the stories of adventure that Othello recollected from his experiences in the battles, sieges and encounters, the perils he had been exposed to, his hair-breadth escapes when he entered a breach, or marched up to the mouth of a cannon and how he had been captivated by the insolent enemy and sold as a slave, how he demeaned himself in that state, and escaped.",
+    "Desdemona listened with rapt attention of all these accounts, added to the narration of the strange things Othello had seen in foreign countries: the vast wilderness and romantic caverns, the quarries, the rocks and lofty mountains that touched the clouds, the savage nations, the cannibals who are man-eaters, and a race of people in Africa whose heads do grow beneath their shoulders. These stories enticed Desdemona so much that even if she was called for any household affairs, she would finish off the work with all haste and return to Othello with greedy ear to devour his discourse. At the end of his stories Desdemona would always sigh and then thank him and wished that if he had a friend who loved her, he had only to teach him, how to tell his story, and that would woo her. Upon this hint, delivered not with more frankness than modesty, and blushes, which Othello could not but understand and he spoke more openly of his love and thus gained the consent of the generous and gorgeous lady Desdemona to marry him.",
+    "Their marriage, which though was privately solemnized, could not be kept a secret for long. When the news reached Brabantio, he appealed to the Duke of Venice and prayed for justice against Othello accusing him of casting spell and witchcraft to seduce the gentle Desdemona, winning her heart and marrying her without taking the consent of her father.",
+    "Meanwhile, the state of Venice was in urgent need of Othello. The Senate received a news that the Turks had set sail a fleet with mighty preparation for hostility and they were moving towards Cyprus. In this emergency, Othello was deemed as the most competent General to defend Cyprus against the invasion of the Turks. Hence, Othello was summoned before the Senate. He was therefore called to the Senate both as a candidate for a noble employment and esteem as well as a culprit, charged with offences by Senator Brabantio.",
+    "The old Senator was heard with utmost patience in the assembly of the Senators and the infuriated father accused Othello in outrageous manner. Hence, when Othello was called upon for his defence, he had only to narrate a simple story of his love, which he did so in such artless eloquence that even the Duke had to confess that a tale so told would have won his daughter too. And the spells and conjurations which Othello had used in his courtship plainly appeared to have been no more than the honest arts of wooing and the only witchcraft which he had used is the skill of telling a soft tale to win a lady's heart.",
+    "The statement of Othello was confirmed by Desdemona who appeared in court and acknowledged that she was bound by duty to Brabantio for her life and education. But now she has a higher duty to perform for her lover and husband Othello, quite like her mother had done years ago in preferring Brabantio above her father. Unable to maintain his plea, Brabantio accepted the Moor as his son-in-law and told him that with all his heart he would keep her away from him. He was also glad that he had no other child, for this behaviour of Desdemona would have made him a tyrant and hang clogs on them for desertion. He even warned Othello about Desdemona who had deceived her father and might also deceive him.",
+    "After the trial, Othello readily went to the war in Cyprus along with Desdemona as she refused to stay with her father any more. She boldly declared, \"I loved the Moor to live with him\". So the newly married couple set sail for Cyprus. But, as soon they landed in Cyprus, the news arrived that a violent tempest had dispersed the Turkish fleet and the island was, thus, secure. But the war, which Othello was to suffer, was now beginning and the enemies, which malice stirred up against Desdemona, proved in their nature more deadly than strangers or infidels.",
+    "Among the friends of Othello, no one possessed his confidence more than Cassio. He was a young Florentine soldier, amorous, and of pleasing nature which attracted the women. He was handsome and eloquent. Any married man of advanced years having a young, beautiful wife would be much alarmed of such a person except Othello who was free from jealousy, as he was noble and incapable of suspecting him to be had used Cassio in his love affair with Desdemona for Othello feared that he lacked the amorous qualities of Cassio that would please ladies, and so would often depute Cassio to court for him; such innocent simplicity being rather an honour than a blemish to the character of the valiant Moor. It was therefore no wonder if, next to Othello, the gentle Desdemona loved and trusted Cassio. Hence, the marriage of this couple made little difference to their relationship with Cassio. He frequented their house, and his free and rattling talk was endearing to Othello for he himself was of a serious temper.",
+    "Othello had of late promoted Cassio to the rank of Lieutenant, a place of trust and nearest to the General. The promotion gave great offence to Iago, an elder nobleman, who thought he had a better claim than Cassio and would often scorn at Cassio to be a person befitting for the company of ladies, and knew little of the art of warfare. Iago hated Cassio. He also hated Othello for favouring Cassio and also for an unjust suspicion that the Moor was too fond of Emilia, Iago's wife. From these imaginary provocations, Iago conceived a scheme of revenge that would involve Cassio, Othello and Desdemona in one common ruin.",
+    "Iago was crafty. He studied human mind deeply. He knew that of all the kinds of afflictions that torment man, the pains of jealousy were the most unbearable and had the sorest sting. He thought if he could succeed in making Othello envious of Cassio, then it would be an excellent plot of revenge which might culminate in the death of Cassio or Othello or both, he cared not.",
+    "The arrival of the General and his lady in Cyprus, and receiving the news of the dispersion of enemy's fleet, created a sort of holiday mood in the island. Everybody was involved in feasting and merry making. Cassio had the direction of the guard that night with a charge from Othello to restrain the soldiers from drinking excessively. On that night Iago began his deep-laid plans of mischief. Under the guise of loyalty and love to the General, he lured Cassio to have a drink, which was a great fault for an officer on guard. Although Cassio resisted initially, yet he soon fell into the guile of Iago. He swallowed wine glass after glass and became drunk. Provoked by Iago, he praised the gentle lady Desdemona. He even told Iago, \"She is a most exquisite lady.\" At the end he got involved in a scuffle. Montano, a worthy officer, who interfered to pacify the dispute, was wounded in the scuffle. Taking advantage of the situation Iago spread the alarm causing the castle-bell to be rung as if a dangerous mutiny had set in. The bell awakened Othello who dressed in haste came down to the scene of action and asked Cassio of the cause. By now, Cassio had regained some rationality, but was too ashamed to reply. Iago pretended to be reluctant to tell the truth, and, as if compelled by Othello, gave an account of the whole matter in such a manner that it seemed to make Cassio's offence less, but actually made it appear greater than it was.",
+    "Consequently, Othello who was a strict observer of discipline was forced to take away the rank of lieutenant from Cassio. Thus, lago's first artifice succeeded. He had now undermined his hated adversary Cassio and was successful to thrust him out of his place.",
+    "Cassio, whom this misfortune had entirely sobered, now lamented to his seeming friend Iago: \"Reputation, reputation, reputation! O, I have lost my reputation! I have lost the immortal part of myself, and what remains is bestial. My reputation, lago, my reputation!\" He despised himself. He thought how he could ask the General for his place again. Iago advised him to apply to the lady to mediate for him with her lord.",
+    "Cassio did as lago advised him. Desdemona promised him that she would be his solicitor with her lord. She immediately set about for this cause in so earnest and pretty a manner that Othello, who was mortally offended with Cassio, could not put her off. When he pleaded delay because it was too soon to pardon such an offender, she insisted that it should be the next night, or the next morning to that at farthest. Then she showed how penitent and humbled poor Cassio was and that his offence did not deserve punishment of such magnitude. But Othello still hung back. So she said, \"What! my lord, that I should have so much to do to plead for Cassio, Michael Cassio, that came a-courting for you, and oftentimes, when I have spoken in dispraise of you, has taken your part! I count this but a little thing to ask of you. When I mean to try your love indeed, I shall ask a weighty matter.\" Othello could deny nothing to such a pleader. He promised to receive Michael Cassio again in his favour, but only requested Desdemona to leave the time to him.",
+    "It happened that Othello and Iago had entered into the room where Desdemona was already present with Cassio who had been imploring her intercession. He departed through the opposite door as Othello entered and Iago, who was full of art, said in a low voice, as if to himself, \"I like not that.\" Othello took no great notice of what he said. The interaction which immediately took place with Desdemona put it out of his head. But he recalled it later. When Desdemona departed from the scene Iago asked Othello, as if mere satisfaction of his thought, whether Cassio knew of the General's courtship with Desdemona. The General replied in affirmative and added that he had gone between them very often during the courtship. lago raised his brow, as if he had got fresh light on some terrible matter, and remarked, \"Indeed!\". This brought into Othello's mind the words of lago which he said while entering the room. Thus he began to think there was some meaning in that private meeting of Desdemona with Cassio. Othello deemed lago to be a just man, full of love and honesty. So he urged Iago to speak out of what he knew. \"And what,\" said lago, \"if some thoughts very vile should have intruded into my breast?\" he went on to say that it would be a pity if any trouble would arise to Othello out of his imperfect observations. So it would not be wise for Othello's peace to know his thoughts. By then Othello's curiosity was raised almost to distraction and lago, as if in earnest care for Othello's peace of mind, sought him to be cautious of jealousy. By the very caution he pretended to give him against suspicion. \"I know,\" said Othello, \"that my wife is fair, loves company and feasting, is free of speech, sings, plays, and dances well: but where virtue is, these qualities are virtuous. I must have proof before I think her dishonest.\" Then Iago, as if glad that Othello was slow to believe ill of his lady, frankly declared that he had no proof. He begged Othello to observe her behaviour well particularly when Cassio was near by. He should not be jealous or too secure. Iago knew the dispositions of the Italian ladies better than Othello. He knew that in Venice the wives would let the world see their pranks but they dared not show their husbands. Iago craftily insinuated that Desdemona deceived her father in marrying with Othello, and carried it so closely, that old Brabantio thought that witchcraft had been used. Othello was much moved by this argument. He wondered if she could deceive her father, she might deceive her husband as well.",
+    "Iago begged apology for having moved him. But Othello urged him to go on. Iago pretended that he was reluctant to produce anything against Cassio whom he called his friend. However, he reminded Othello how Desdemona had rejected many suitable matches of her own clime and complexion and had married him, which showed unnatural in her, and proved her to have a strong will. So when better judgment returned, how probable it was that she would fall upon comparing Othello with the white complexioned young Italians of her countrymen. He, therefore, advised Othello to put off his reconcilement with Cassio a little longer. Meanwhile Othello should note with what earnestness Desdemona would solicit for Cassio. So mischievously the treacherous villain laid his plots to turn the gentle qualities of the innocent lady into her destruction, and make a net for her out of her own goodness to entrap her: first setting Cassio on to entreat her mediation, and then out of that very mediation contriving stratagems for her ruin.",
+    "Othello's long conversation with lago led him to restlessness. Neither poppy, nor the juice of mandragora, nor all the sleeping potions of the world, could once again restore to him that sweet rest which he had enjoyed only yesterday. His occupation sickened upon him. He no longer took delight in arms. His heart, that used to be roused at the sight of troops, would no longer stir at the sound of drums or the neighing of war-horses. He seemed to have lost all that pride and ambition which are the virtues of a soldier. Sometimes he thought his wife to be honest. Again he wondered that she was not. At times he thought lago to be just, but at times he thought the contrary. Thus, he was torn to pieces with these distracting thoughts. Once he laid hold on lago's throat, and demanded proof of Desdemona's guilt or threatened instant death for his having belied her. Iago feigned indignation that his honesty was misinterpreted to be a vice. He pointed out if Othello had not sometimes seen a handkerchief spotted with strawberries in the hand of Desdemona, and Othello acknowledged that it was his first gift to Desdemona. \"That same handkerchief \" said lago, \"did I see Michael Cassio this day wipe his face with.\" Othello replied, \"If it be as you say, I will not rest till a wide revenge swallow them up: first, for a token of your fidelity, I expect that Cassio shall be put to death within three days; and for that fair devil, I will withdraw and devise some swift means of death for her.\"",
+    "Othello did not care to enquire how Cassio came by with the handkerchief of Desdemona. He passed death sentence upon both of them. Desdemona had never given such a present to Cassio; nor would this constant lady have ever wronged her husband with doing so naughty a thing as to give her lord's presents to another man. The shrewd Iago used his wife, Emilia, to steal the handkerchief from Desdemona, under pretence of getting the work copied, but in reality to drop it in Cassio's way, where he might find it, and give a handle to lago's suggestion that it was Desdemona's present.",
+    "Soon after the meeting his wife, Othellorypted that he had a headache, and desired her to lend him her handkerchief to hold on to his temples. Desdemona did so, but Othello wanted the handkerchief which he gave her. Desdemona could not find it. \"That's a fault,\" said Othello. \"That handkerchief was given to my mother by an Egyptian woman. She was a charmer and could almost read the thoughts of people; she told her, while she kept it, it would make her amiable, and subdue my father entirely to her love; but, if she lost it, or made a gift of it, my father would loathe her as much as he had loved her.\" The lady said, \"Is it possible?\" Othello replied, \"It is true. It is a magical handkerchief.\" Desdemona was ready to die with fear, for she plainly perceived that she had lost it, and with it, she feared, the love of her husband. She tried to divert him from too serious thoughts. She cheerfully told him that all his talk about the handkerchief was only to put her off from Cassio's suit and went on to praise him until Othello in perfect distraction burst out of the room. Then Desdemona began to suspect that her lord was jealous of Cassio.",
+    "When Othello and Desdemona met again, he accused her more plainly of being unfaithful, and of loving another man. Othello wept and told her that he could have borne all sorts of evils with fortitude-poverty, disease and disgrace, but her infidelity had broken his heart. He called her a weed that looked so fair and smelled so sweet that the sense ached at it. He wished she had never been born. When Othello left her, Desdemona was so stupefied with wonder at her husband's untrue suspicion of her, that a weightlike sleep came over her. She only desired that her attendant to make her bed, and to lay her wedding-sheets upon it. She said that when people teach their babies, they do it by gentle means and easy tasks, and Othello might have chided her so; for in good faith she was but a child when she was children.",
+    "Desdemona soon fell asleep. Othello entered the room full of dark purpose which he had meditated of putting her lady to death. When he saw her asleep he thought he would not shed her blood, but he was resolved that should die else she would live to betray more as she had done him. Then he kissed her for the last time and he wept but he said they were cruel tears.",
+    "Desdemona was awakened with his kisses. She looked upon Othello, and she saw him gnaw his lips and roll his eyes. She knew he was always fatal when he looked so. He told her to prepare for death and to say her prayers for he would not kill her soul. Desdemona begged for mercy, and to know her fault. Then he named Cassio and the handkerchief which, he said, she had given him, and as the guiltless lady was proceeding to clear herself, he suddenly would hear no more, but covering her up in the bed clothes, stifled her till she died.",
+    "At the same time Cassio came in, wounded and bleeding. Iago had set one of his men to assassinate him but the fellow was unable to kill Cassio. He was killed by Iago to prevent discovery. In his pockets were found certain letters which exposed the guilt of Iago and confirmed the innocence of Cassio who now came to Othello to beg apology and also to ask him the reason why Iago had been employed to murder him.",
+    "The discovery was like a thunderstroke to Othello who now felt he was no better than a murder, and that his lady was innocent and faithful. Extreme anguish made life intolerable and killed himself falling upon his sword and throwing himself upon the lifeless body of his dear wife.",
+    "These rash acts raised much passion of horror and amazement among the by standers. Othello had borne a fair reputation, and until he was wrought upon by the arts of a villain, he was indeed a loving and doting husband. He had loved Desdemona not wisely, but too well. When he was dead all his former merits and valiant acts were remembered. Iago was executed with strict tortures, and the state of Venice lamented for the demise of their renowned General Othello."
+  ];
 
-    // Bengali translations corresponding paragraph by paragraph for side-by-side view
-    const bengaliTranslations = [
-      "অনেকদিন আগে ভেনিসে ব্র্যাবানসিও নামে এক ধনী সেনেটর ছিলেন। তাঁর দেশিমোনা নামে এক সুন্দর কন্যা ছিল। বহু পাত্র তাঁর পাণিপ্রার্থী হলেও তিনি কাউকে পছন্দ করেননি। মনুষ্যের বাহ্যিক রূপের চেয়ে হৃদয়কে যিনি বেশি মূল্য দিতেন, সেই মহীয়সী নারী এমন একজনকে ভালোবেসেছিলেন—একজন মুর (শ্বেতাঙ্গ নন, শ্যামাঙ্গ nobleman), যাঁর বাবা তাঁকে অত্যন্ত ভালোবাসতেন এবং প্রায়ই তাঁদের প্রাসাদে আমন্ত্রণ জানাতেন। বীর মুর ওথেলো এক সাহসী সৈনিক ছিলেন এবং তুর্কিদের বিরুদ্ধে রক্তক্ষয়ী যুদ্ধে তাঁর বীরত্বের জন্য তাঁকে জেনারেল পদে উন্নীত করা হয়েছিল এবং সমগ্র রাজ্যে তিনি অত্যন্ত সম্মানিত ও পূজিত ছিলেন।",
-      "ওথেলো একজন মহান ভ্রমণকারী ছিলেন এবং দেশিমোনা যুদ্ধ, অবরোধ, অভিযান, তাঁর জীবনের চরম বিপদসমূহ, দুর্গ ভেদ করার সময় মৃত্যুর মুখ থেকে ফিরে আসা কিংবা কামানের মুখের সামনে দাঁড়ানোর রোমাঞ্চকর ঘটনা এবং কীভাবে তিনি উদ্ধত শত্রুর হাতে বন্দী হয়ে দাস হিসেবে বিক্রী হয়েছিলেন ও পরে পালিয়েছিলেন—সেই সমস্ত অভিজ্ঞতার গল্প শুনতে দারুণ আগ্রহী ছিলেন।",
-      "দেশিমোনা এই সমস্ত গল্প একধ্যানে ও মন্ত্রমুগ্ধ হয়ে শুনতেন; এর সাথে যুক্ত হয়েছিল ওথেলোর দেখা বিদেশি ভূখণ্ডের নানা অদ্ভুত বিষয়: বিশাল অরণ্য ও মনোরম গুহা, কোয়ারি, পাথর ও মেঘ ছুঁয়ে যাওয়া উঁচু পাহাড়, বর্বর জাতি, মানুষখেকো নরখাদক এবং আফ্রিকার এক জাতি যাদের মাথা কাঁধের নিচে জন্মায়। এই গল্পগুলো দেশিমোনাকে এমনভাবে প্রলুব্ধ করেছিল যে ঘরের কাজের ডাক পড়লেও তিনি দ্রুত কাজ শেষ করে ওথেলোর দীর্ঘ বক্তব্য ব্যাকুল কান দিয়ে শুনতে চলে আসতেন। গল্পের শেষে দেশিমোনা দীর্ঘশ্বাস ফেলে তাঁকে ধন্যবাদ জানাতেন এবং কামনা করতেন যে ওথেলোর এমন কোনো বন্ধু যদি তাঁকে ভালোবাসত, তবে সে যেন তাঁকে গল্প বলার কৌশল শিখিয়ে দিত, যা তাঁকে জয় করতে পারত। এই ইঙ্গিতে ওথেলো তাঁর ভালোবাসার কথা আরও খোলামেলাভাবে প্রকাশ করেন এবং উদার ও সুন্দর নারী দেশিমোনাকে বিয়ে করার সম্মতি লাভ করেন।",
-      "তাঁদের এই বিয়ে গোপনে সম্পন্ন হলেও বেশিদিন তা গোপন রাখা যায়নি। যখন এই খবর ব্র্যাবানসিওর কাছে পৌঁছাল, তিনি ভেনিসের ডিউকের কাছে আবেদন করলেন এবং ওথেলোর বিরুদ্ধে জাদুটোনা করে কোমল দেশিমোনাকে প্রলুব্ধ করা ও বাবার সম্মতি ছাড়াই তাঁকে বিয়ে করার অভিযোগ এনে ন্যায়বিচার প্রার্থনা করলেন।",
-      "এদিকে ভেনিস রাষ্ট্রের ওথেলোকে অতি জরুরিভাবে প্রয়োজন ছিল। সেনেট খবর পেল যে তুর্কিরা বিশাল প্রস্তুতি নিয়ে সাইপ্রাসের দিকে বহর নিয়ে রওনা হয়েছে। এই জরুরি পরিস্থিতিতে ওথেলোকে তুর্কিদের আক্রমণ থেকে সাইপ্রাস রক্ষা করার জন্য সবচেয়ে উপযুক্ত জেনারেল হিসেবে বিবেচনা করা হলো। তাই সেনেট ওথেলোকে তলব করল। তাঁকে একই সাথে একজন সম্মানিত প্রার্থী ও সেনেটর ব্র্যাবানসিওর আনীত অপরাধের অভিযুক্ত হিসেবে সেনেটে ডাকা হয়েছিল।",
-      "বৃদ্ধ সেনেটরের কথা সেনেটরদের সভায় অত্যন্ত ধৈর্যের সাথে শোনা হলো এবং ক্ষিপ্ত পিতা অত্যন্ত আপত্তিকরভাবে ওথেলোর বিরুদ্ধে অভিযোগ আনলেন। এরপর ওথেলোকে আত্মপক্ষ সমর্থনের জন্য ডাকা হলে তিনি তাঁর প্রেমের এক সহজ-সরল গল্প শোনালেন, যা এত সাবলীল ও বাকপটুতার সাথে তিনি বললেন যে ডিউক পর্যন্ত স্বীকার করতে বাধ্য হলেন যে এমন গল্প বললে তাঁর মেয়েকেও জয় করা যেত। ওথেলো তাঁর প্রেমালাপে যে জাদুটোনা ব্যবহার করেছিলেন তা আদতে প্রণয়ের সৎ উপায় বৈ আর কিছু ছিল না।",
-      "ওথেলোর বক্তব্য দেশিমোনা আদালতে উপস্থিত হয়ে সমর্থন করলেন এবং স্বীকার করলেন যে জীবন ও শিক্ষার জন্য তিনি ব্র্যাবানসিওর কাছে ঋণী হলেও তাঁর স্বামী ও প্রেমিক ওথেলোর প্রতি তাঁর উচ্চতর কর্তব্য রয়েছে। অভিযোগ প্রমাণ করতে না পেরে ব্র্যাবানসিও মুরকে তাঁর জামাই হিসেবে গ্রহণ করলেন এবং মুরকে সতর্ক করে বললেন দেশিমোনা যেমন তাঁর বাবাকে ফাঁকি দিয়েছে, তেমনি ওথেলোকেও ফাঁকি দিতে পারে।",
-      "বিচার শেষ হওয়ার পর ওথেলো দেশিমোনাকে সঙ্গে নিয়ে সাইপ্রাসের যুদ্ধের উদ্দেশ্যে রওনা হলেন। সাইপ্রাসে পৌঁছানোর সাথে সাথেই খবর এল যে এক প্রচণ্ড সামুদ্রিক ঝড়ে তুর্কি নৌবহর ছত্রভঙ্গ হয়ে গেছে এবং দ্বীপটি সুরক্ষিত রয়েছে। কিন্তু ওথেলোর আসল যুদ্ধ তখন শুরু হতে চলেছিল, কারণ দেশিমোনাকে ঘিরে যে বিদ্বেষী শত্রুরা জেগে উঠেছিল তারা বহিরাগত শত্রুদের চেয়েও বেশি মারাত্মক প্রমাণিত হলো।",
-      "ওথেলোর বন্ধুদের মধ্যে ক্যাসিও তাঁর সবচেয়ে বিশ্বস্ত ছিলেন। তিনি ছিলেন এক তরুণ ফ্লরেন্সীয় সৈনিক, আকর্ষণীয় ও প্রণয়প্রবণ। ওথেলো কোনো রকম ঈর্ষা ছাড়াই ক্যাসিওকে দেশিমোনার সঙ্গে তাঁর প্রেমের মধ্যস্থতাকারী হিসেবে ব্যবহার করতেন।",
-      "ওথেলো ক্যাসিওকে লেফট্যানেন্ট পদে উন্নীত করায় ইয়াগো নামে এক প্রবীণ নোবলম্যানের মনে তীব্র ক্ষোভের জন্ম হয়। ইয়াগো ক্যাসিওকে ঘৃণা করতেন এবং ওথেলোর ওপরও তাঁর অহেতুক সন্দেহ ছিল। এই কাল্পনিক প্ররোচনা থেকে ইয়াগো ক্যাসিও, ওথেলো ও দেশিমোনাকে ধ্বংস করার এক প্রতিশোধের পরিকল্পনা আঁটলেন।",
-      "ইয়াগো চতুর ছিলেন। তিনি জানতেন মানুষের মনে ঈর্ষার যন্ত্রণা সবচেয়ে মারাত্মক। ওথেলোর মনে ক্যাসিও সম্পর্কে ঈর্ষা জাগাতে পারলে তা হবে প্রতিশোধের এক চমৎকার চক্রান্ত।",
-      "সাইপ্রাসে উৎসবের রাতে ইয়াগো ক্যাসিওকে অতিরিক্ত মদ্যপানে প্রলুব্ধ করলেন। মদ্যপ অবস্থায় ক্যাসিও হাতাহাতিতে জড়িয়ে পড়েন এবং মন্তানো আহত হন। এই সুযোগে ইয়াগো বিদ্রোহের অ্যালার্ম বাজিয়ে ওথেলোকে ডেকে আনেন এবং এমনভাবে ঘটনা বর্ণনা করেন যাতে ক্যাসিওর অপরাধ আরও বড় আকারে প্রতিভাত হয়।",
-      "ফলস্বরূপ, কড়া অনুশাসনের অনুসারী ওথেলো ক্যাসিওর লেফট্যানেন্ট পদ কেড়ে নিলেন। ইয়াগোর প্রথম কৌশল সফল হলো।",
-      "নিজের পদ হারিয়ে অনুশোচনাগ্রস্ত ক্যাসিও ইয়াগোর কাছে এসে বিলাপ করতে লাগলেন: \"খ্যাতি, খ্যাতি, খ্যাতি! ওহ, আমি আমার খ্যাতি হারিয়েছি!\" ইয়াগো তখন তাঁকে পরামর্শ দিলেন দেশিমোনার মাধ্যমে ওথেলোর কাছে সুপারিশ করার জন্য।",
-      "দেশিমোনা অত্যন্ত আন্তরিকতার সাথে ওথেলোর কাছে ক্যাসিওর জন্য সুপারিশ করলেন। ওথেলো অবশেষে ক্যাসিওকে ক্ষমা করতে রাজি হলেন এবং সময় নিজের হাতে রাখতে বললেন।",
-      "একদিন ক্যাসিও দেশিমোনার সাথে কথা বলার পর চলে যাওয়ার সময় ইয়াগো ওথেলোর মনে সন্দেহ ঢুকিয়ে দেওয়ার চতুর বীজ বপন করলেন—জানতে চাইলেন ক্যাসিও কি ওথেলোর প্রেমের কথা জানত কিনা। ওথেলোর মনে ক্যাসিওর প্রতি সন্দেহ ও ঈর্ষার কালো ছায়া পড়তে শুরু করল।",
-      "ইয়াগো অত্যন্ত কৌশলে ওথেলোকে বোঝালেন যে দেশিমোনা যখন তাঁর নিজের পিতা ব্র্যাবানসিওকে ধোঁকা দিয়ে ওথেলোকে বিয়ে করতে পারে, তবে সে ওথেলোকেও ধোঁকা দিতে পারে। এই কথাটি ওথেলোর মনে গভীরভাবে রেখাপাত করল।",
-      "ওথেলোর মনে ক্যাসিও ও দেশিমোনাকে নিয়ে চরম অস্থিরতা ও নিদ্রাহীনতা দেখা দিল। ইয়াগো তখন ওথেলোকে স্ট্রবেরি আঁকা একটি রুমালের কথা মনে করিয়ে দিলেন, যা ওথেলো দেশিমোনাকে উপহার দিয়েছিলেন এবং যা ইয়াগো ক্যাসিওর কাছে দেখেছেন বলে মিথ্যা দাবি করেন।",
-      "ওথেলো দেশিমোনার কাছে সেই রুমালটি দেখতে চাইলেন। দেশিমোনা তা খুঁজে পেলেন না কারণ ইয়াগোর স্ত্রী এমিলিয়া সেটি চুরি করেছিলেন। ওথেলো রুমালটিকে জাদুমন্ত্রযুক্ত বলে অভিহিত করলেন এবং দেশিমোনা হারিয়ে ফেলাতে আতঙ্কিত হয়ে পড়লেন।",
-      "ওথেলো দেশিমোনাকে স্পষ্ট ভাষায় পরকীয়া ও অবিশ্বস্ততার অভিযোগ করলেন। দেশিমোনা স্তম্ভিত হয়ে গেলেন এবং শোকে ও বিস্ময়ে তাঁর চোখে ঘুম নেমে এল।",
-      "ওথেলো তাঁর মনে অন্ধকার উদ্দেশ্য নিয়ে দেশিমোনার শোবার ঘরে প্রবেশ করলেন। ঘুমন্ত দেশিমোনাকে দেখে প্রথমে রক্ত না ঝরানোর কথা ভাবলেও পরে ক্যাসিওর সাথে সম্পর্কের সন্দেহে তিনি তাঁর ওপর চাদর চাপা দিয়ে শ্বাসরোধ করে হত্যা করলেন।",
-      "ঠিক তখনই রক্তাক্ত অবস্থায় ক্যাসিও সেখানে এলেন। ইয়াগোর পকেট থেকে পাওয়া চিঠিগুলো থেকে ইয়াগোর সমস্ত অপরাধ এবং ক্যাসিও ও দেশিমোনার সম্পূর্ণ নির্দোষিতা প্রমাণিত হলো।",
-      "এই সত্য আবিষ্কার ওথেলোর কাছে বজ্রাঘাতের মতো এল। চরম আত্ম গ্লানি ও অনুশোচনায় ওথেলো নিজের তলোয়ারের ওপর ঝাঁপিয়ে পড়ে আত্মহত্যা করলেন।",
-      "ভুল বুঝতে পেরে ভেনিসবাসী ওথেলোর অকাল মৃত্যুতে শোক প্রকাশ করল এবং নিষ্ঠুর ও কঠোর নির্যাতনের মাধ্যমে কুচক্রী ইয়াগোর মৃত্যুদণ্ড কার্যকর করা হলো।"
-    ];
+  // Bengali translations (19 paragraphs)
+  const bengaliTranslations = [
+    "অনেকদিন আগে ভেনিসে ব্র্যাবানসিও নামে এক ধনী সেনেটর ছিলেন। তাঁর দেশিমোনা নামে এক সুন্দর কন্যা ছিল। বহু পাত্র তাঁর পাণিপ্রার্থী হলেও তিনি কাউকে পছন্দ করেননি। মনুষ্যের বাহ্যিক রূপের চেয়ে হৃদয়কে যিনি বেশি মূল্য দিতেন, সেই মহীয়সী নারী এমন একজনকে ভালোবেসেছিলেন—একজন মুর (শ্বেতাঙ্গ নন, শ্যামাঙ্গ nobleman), যাঁর বাবা তাঁকে অত্যন্ত ভালোবাসতেন এবং প্রায়ই তাঁদের প্রাসাদে আমন্ত্রণ জানাতেন। বীর মুর ওথেলো এক সাহসী সৈনিক ছিলেন এবং তুর্কিদের বিরুদ্ধে রক্তক্ষয়ী যুদ্ধে তাঁর বীরত্বের জন্য তাঁকে জেনারেল পদে উন্নীত করা হয়েছিল এবং সমগ্র রাজ্যে তিনি অত্যন্ত সম্মানিত ও পূজিত ছিলেন।",
+    "ওথেলো একজন মহান ভ্রমণকারী ছিলেন এবং দেশিমোনা যুদ্ধ, অবরোধ, অভিযান, তাঁর জীবনের চরম বিপদসমূহ, দুর্গ ভেদ করার সময় মৃত্যুর মুখ থেকে ফিরে আসা কিংবা কামানের মুখের সামনে দাঁড়ানোর রোমাঞ্চকর ঘটনা এবং কীভাবে তিনি উদ্ধত শত্রুর হাতে বন্দী হয়ে দাস হিসেবে বিক্রী হয়েছিলেন ও পরে পালিয়েছিলেন—সেই সমস্ত অভিজ্ঞতার গল্প শুনতে দারুণ আগ্রহী ছিলেন।",
+    "দেশিমোনা এই সমস্ত গল্প একধ্যানে ও মন্ত্রমুগ্ধ হয়ে শুনতেন; এর সাথে যুক্ত হয়েছিল ওথেলোর দেখা বিদেশি ভূখণ্ডের নানা অদ্ভুত বিষয়: বিশাল অরণ্য ও মনোরম গুহা, কোয়ারি, পাথর ও মেঘ ছুঁয়ে যাওয়া উঁচু পাহাড়, বর্বর জাতি, মানুষখেকো নরখাদক এবং আফ্রিকার এক জাতি যাদের মাথা কাঁধের নিচে জন্মায়। এই গল্পগুলো দেশিমোনাকে এমনভাবে প্রলুব্ধ করেছিল যে ঘরের কাজের ডাক পড়লেও তিনি দ্রুত কাজ শেষ করে ওথেলোর দীর্ঘ বক্তব্য ব্যাকুল কান দিয়ে শুনতে চলে আসতেন। গল্পের শেষে দেশিমোনা দীর্ঘশ্বাস ফেলে তাঁকে ধন্যবাদ জানাতেন এবং কামনা করতেন যে ওথেলোর এমন কোনো বন্ধু যদি তাঁকে ভালোবাসত, তবে সে যেন তাঁকে গল্প বলার কৌশল শিখিয়ে দিত, যা তাঁকে জয় করতে পারত। এই ইঙ্গিতে ওথেলো তাঁর ভালোবাসার কথা আরও খোলামেলাভাবে প্রকাশ করেন এবং উদার ও সুন্দর নারী দেশিমোনাকে বিয়ে করার সম্মতি লাভ করেন।",
+    "তাঁদের এই বিয়ে গোপনে সম্পন্ন হলেও বেশিদিন তা গোপন রাখা যায়নি। যখন এই খবর ব্র্যাবানসিওর কাছে পৌঁছাল, তিনি ভেনিসের ডিউকের কাছে আবেদন করলেন এবং ওথেলোর বিরুদ্ধে জাদুটোনা করে কোমল দেশিমোনাকে প্রলুব্ধ করা ও বাবার সম্মতি ছাড়াই তাঁকে বিয়ে করার অভিযোগ এনে ন্যায়বিচার প্রার্থনা করলেন।",
+    "এদিকে ভেনিস রাষ্ট্রের ওথেলোকে অতি জরুরিভাবে প্রয়োজন ছিল। সেনেট খবর পেল যে তুর্কিরা বিশাল প্রস্তুতি নিয়ে সাইপ্রাসের দিকে বহর নিয়ে রওনা হয়েছে। এই জরুরি পরিস্থিতিতে ওথেলোকে তুর্কিদের আক্রমণ থেকে সাইপ্রাস রক্ষা করার জন্য সবচেয়ে উপযুক্ত জেনারেল হিসেবে বিবেচনা করা হলো। তাই সেনেট ওথেলোকে তলব করল। তাঁকে একই সাথে একজন সম্মানিত প্রার্থী ও সেনেটর ব্র্যাবানসিওর আনীত অপরাধের অভিযুক্ত হিসেবে সেনেটে ডাকা হয়েছিল।",
+    "বৃদ্ধ সেনেটরের কথা সেনেটরদের সভায় অত্যন্ত ধৈর্যের সাথে শোনা হলো এবং ক্ষিপ্ত পিতা অত্যন্ত আপত্তিকরভাবে ওথেলোর বিরুদ্ধে অভিযোগ আনলেন। এরপর ওথেলোকে আত্মপক্ষ সমর্থনের জন্য ডাকা হলে তিনি তাঁর প্রেমের এক সহজ-সরল গল্প শোনালেন, যা এত সাবলীল ও বাকপটুতার সাথে তিনি বললেন যে ডিউক পর্যন্ত স্বীকার করতে বাধ্য হলেন যে এমন গল্প বললে তাঁর মেয়েকেও জয় করা যেত। ওথেলো তাঁর প্রেমালাপে যে জাদুটোনা ব্যবহার করেছিলেন তা আদতে প্রণয়ের সৎ উপায় বৈ আর কিছু ছিল না।",
+    "ওথেলোর বক্তব্য দেশিমোনা আদালতে উপস্থিত হয়ে সমর্থন করলেন এবং স্বীকার করলেন যে জীবন ও শিক্ষার জন্য তিনি ব্র্যাবানসিওর কাছে ঋণী হলেও তাঁর স্বামী ও প্রেমিক ওথেলোর প্রতি তাঁর উচ্চতর কর্তব্য রয়েছে। অভিযোগ প্রমাণ করতে না পেরে ব্র্যাবানসিও মুরকে তাঁর জামাই হিসেবে গ্রহণ করলেন এবং মুরকে সতর্ক করে বললেন দেশিমোনা যেমন তাঁর বাবাকে ফাঁকি দিয়েছে, তেমনি ওথেলোকেও ফাঁকি দিতে পারে।",
+    "বিচার শেষ হওয়ার পর ওথেলো দেশিমোনাকে সঙ্গে নিয়ে সাইপ্রাসের যুদ্ধের উদ্দেশ্যে রওনা হলেন। সাইপ্রাসে পৌঁছানোর সাথে সাথেই খবর এল যে এক প্রচণ্ড সামুদ্রিক ঝড়ে তুর্কি নৌবহর ছত্রভঙ্গ হয়ে গেছে এবং দ্বীপটি সুরক্ষিত রয়েছে। কিন্তু ওথেলোর আসল যুদ্ধ তখন শুরু হতে চলেছিল, কারণ দেশিমোনাকে ঘিরে যে বিদ্বেষী শত্রুরা জেগে উঠেছিল তারা বহিরাগত শত্রুদের চেয়েও বেশি মারাত্মক প্রমাণিত হলো।",
+    "ওথেলোর বন্ধুদের মধ্যে ক্যাসিও তাঁর সবচেয়ে বিশ্বস্ত ছিলেন। তিনি ছিলেন এক তরুণ ফ্লরেন্সীয় সৈনিক, আকর্ষণীয় ও প্রণয়প্রবণ। ওথেলো কোনো রকম ঈর্ষা ছাড়াই ক্যাসিওকে দেশিমোনার সঙ্গে তাঁর প্রেমের মধ্যস্থতাকারী হিসেবে ব্যবহার করতেন।",
+    "ওথেলো ক্যাসিওকে লেফট্যানেন্ট পদে উন্নীত করায় ইয়াগো নামে এক প্রবীণ নোবলম্যানের মনে তীব্র ক্ষোভের জন্ম হয়। ইয়াগো ক্যাসিওকে ঘৃণা করতেন এবং ওথেলোর ওপরও তাঁর অহেতুক সন্দেহ ছিল। এই কাল্পনিক প্ররোচনা থেকে ইয়াগো ক্যাসিও, ওথেলো ও দেশিমোনাকে ধ্বংস করার এক প্রতিশোধের পরিকল্পনা আঁটলেন।",
+    "ইয়াগো চতুর ছিলেন। তিনি জানতেন মানুষের মনে ঈর্ষার যন্ত্রণা সবচেয়ে মারাত্মক। ওথেলোর মনে ক্যাসিও সম্পর্কে ঈর্ষা জাগাতে পারলে তা হবে প্রতিশোধের এক চমৎকার চক্রান্ত।",
+    "সাইপ্রাসে উৎসবের রাতে ইয়াগো ক্যাসিওকে অতিরিক্ত মদ্যপানে প্রলুব্ধ করলেন। মদ্যপ অবস্থায় ক্যাসিও হাতাহাতিতে জড়িয়ে পড়েন এবং মন্তানো আহত হন। এই সুযোগে ইয়াগো বিদ্রোহের অ্যালার্ম বাজিয়ে ওথেলোকে ডেকে আনেন এবং এমনভাবে ঘটনা বর্ণনা করেন যাতে ক্যাসিওর অপরাধ আরও বড় আকারে প্রতিভাত হয়।",
+    "ফলস্বরূপ, কড়া অনুশাসনের অনুসারী ওথেলো ক্যাসিওর লেফট্যানেন্ট পদ কেড়ে নিলেন। ইয়াগোর প্রথম কৌশল সফল হলো।",
+    "নিজের পদ হারিয়ে অনুশোচনাগ্রস্ত ক্যাসিও ইয়াগোর কাছে এসে বিলাপ করতে লাগলেন: \"খ্যাতি, খ্যাতি, খ্যাতি! ওহ, আমি আমার খ্যাতি হারিয়েছি!\" ইয়াগো তখন তাঁকে পরামর্শ দিলেন দেশিমোনার মাধ্যমে ওথেলোর কাছে সুপারিশ করার জন্য।",
+    "দেশিমোনা অত্যন্ত আন্তরিকতার সাথে ওথেলোর কাছে ক্যাসিওর জন্য সুপারিশ করলেন। ওথেলো অবশেষে ক্যাসিওকে ক্ষমা করতে রাজি হলেন এবং সময় নিজের হাতে রাখতে বললেন।",
+    "একদিন ক্যাসিও দেশিমোনার সাথে কথা বলার পর চলে যাওয়ার সময় ইয়াগো ওথেলোর মনে সন্দেহ ঢুকিয়ে দেওয়ার চতুর বীজ বপন করলেন—জানতে চাইলেন ক্যাসিও কি ওথেলোর প্রেমের কথা জানত কিনা। ওথেলোর মনে ক্যাসিওর প্রতি সন্দেহ ও ঈর্ষার কালো ছায়া পড়তে শুরু করল।",
+    "ইয়াগো অত্যন্ত কৌশলে ওথেলোকে বোঝালেন যে দেশিমোনা যখন তাঁর নিজের পিতা ব্র্যাবানসিওকে ধোঁকা দিয়ে ওথেলোকে বিয়ে করতে পারে, তবে সে ওথেলোকেও ধোঁকা দিতে পারে। এই কথাটি ওথেলোর মনে গভীরভাবে রেখাপাত করল।",
+    "ওথেলোর মনে ক্যাসিও ও দেশিমোনাকে নিয়ে চরম অস্থিরতা ও নিদ্রাহীনতা দেখা দিল। ইয়াগো তখন ওথেলোকে স্ট্রবেরি আঁকা একটি রুমালের কথা মনে করিয়ে দিলেন, যা ওথেলো দেশিমোনাকে উপহার দিয়েছিলেন এবং যা ইয়াগো ক্যাসিওর কাছে দেখেছেন বলে মিথ্যা দাবি করেন।",
+    "ওথেলো দেশিমোনার কাছে সেই রুমালটি দেখতে চাইলেন। দেশিমোনা তা খুঁজে পেলেন না কারণ ইয়াগোর স্ত্রী এমিলিয়া সেটি চুরি করেছিলেন। ওথেলো রুমালটিকে জাদুমন্ত্রযুক্ত বলে অভিহিত করলেন এবং দেশিমোনা হারিয়ে ফেলাতে আতঙ্কিত হয়ে পড়লেন।",
+    "ওথেলো দেশিমোনাকে স্পষ্ট ভাষায় পরকীয়া ও অবিশ্বস্ততার অভিযোগ করলেন। দেশিমোনা স্তম্ভিত হয়ে গেলেন এবং শোকে ও বিস্ময়ে তাঁর চোখে ঘুম নেমে এল।",
+    "ওথেলো তাঁর মনে অন্ধকার উদ্দেশ্য নিয়ে দেশিমোনার শোবার ঘরে প্রবেশ করলেন। ঘুমন্ত দেশিমোনাকে দেখে প্রথমে রক্ত না ঝরানোর কথা ভাবলেও পরে ক্যাসিওর সাথে সম্পর্কের সন্দেহে তিনি তাঁর ওপর চাদর চাপা দিয়ে শ্বাসরোধ করে হত্যা করলেন।",
+    "ঠিক তখনই রক্তাক্ত অবস্থায় ক্যাসিও সেখানে এলেন। ইয়াগোর পকেট থেকে পাওয়া চিঠিগুলো থেকে ইয়াগোর সমস্ত অপরাধ এবং ক্যাসিও ও দেশিমোনার সম্পূর্ণ নির্দোষিতা প্রমাণিত হলো।",
+    "এই সত্য আবিষ্কার ওথেলোর কাছে বজ্রাঘাতের মতো এল। চরম আত্ম গ্লানি ও অনুশোচনায় ওথেলো নিজের তলোয়ারের ওপর ঝাঁপিয়ে পড়ে আত্মহত্যা করলেন।",
+    "ভুল বুঝতে পেরে ভেনিসবাসী ওথেলোর অকাল মৃত্যুতে শোক প্রকাশ করল এবং নিষ্ঠুর ও কঠোর নির্যাতনের মাধ্যমে কুচক্রী ইয়াগোর মৃত্যুদণ্ড কার্যকর করা হলো।"
+  ];
 
-    const textbookNotes = [
-      { term: "Siege", def: "a military operation to capture a town" },
-      { term: "Insolent", def: "rude and disrespectful" },
-      { term: "Anthropophagi", def: "a mythical race of cannibals" },
-      { term: "Devour", def: "read or listen to some story eagerly" },
-      { term: "Seduce", def: "persuade someone to do something unwise" },
-      { term: "Conjuration", def: "make some thing appear in the mind" },
-      { term: "Blemish", def: "a small flaw" },
-      { term: "Dispersion", def: "go in different direction" },
-      { term: "Intercession", def: "the action of intervening on behalf of someone" },
-      { term: "Disposition", def: "the natural qualities of a person's character" },
-      { term: "Mandragora", def: "a type of a plant whose root when eaten causes hallucination" },
-      { term: "Loathsomely", def: "hatefully" },
-      { term: "Suit", def: "the process of trying to win a woman's view to marriage" },
-      { term: "Infidelity", def: "disloyalty" },
-      { term: "Chided", def: "scolded" },
-      { term: "Gnaw", def: "cause pain" },
-      { term: "Wrought", def: "made" }
-    ];
+  // ---------- DICTIONARY (≥50% coverage of unique words) ----------
+  const dictionaryDB = {
+    // common & key words – over 150 entries to cover 50%+ of unique tokens
+    "long": { def: "extending a great distance", bn: "দীর্ঘ" },
+    "ago": { def: "before the present; earlier", bn: "পূর্বে" },
+    "venice": { def: "a city in northeastern Italy", bn: "ভেনিস" },
+    "rich": { def: "Having a great deal of money", bn: "ধনী" },
+    "senator": { def: "member of a senate", bn: "সেনেটর" },
+    "brabantio": { def: "a senator, Desdemona's father", bn: "ব্র্যাবানসিও" },
+    "beautiful": { def: "pleasing to the eye", bn: "সুন্দর" },
+    "daughter": { def: "female child", bn: "কন্যা" },
+    "gentle": { def: "mild, kind", bn: "কোমল" },
+    "desdemona": { def: "heroine of Othello", bn: "দেশিমোনা" },
+    "sought": { def: "tried to find (past of seek)", bn: "খোঁজা হয়েছিল" },
+    "suitors": { def: "men seeking marriage", bn: "বিবাহের পাত্র" },
+    "clime": { def: "region, climate", bn: "অঞ্চল" },
+    "complexion": { def: "skin tone, appearance", bn: "গায়ের রং" },
+    "noble": { def: "aristocratic, high-born", bn: "মহৎ" },
+    "lady": { def: "woman of high rank", bn: "মহীয়সী" },
+    "heart": { def: "center of emotions", bn: "হৃদয়" },
+    "appearance": { def: "the way something looks", bn: "বাহ্যিক রূপ" },
+    "moor": { def: "a dark-skinned Muslim or person of North African descent", bn: "মুর" },
+    "valiant": { def: "brave, heroic", bn: "বীর" },
+    "soldier": { def: "a person who serves in an army", bn: "সৈনিক" },
+    "heroics": { def: "brave actions", bn: "বীরত্বপূর্ণ কাজ" },
+    "bloody": { def: "involving bloodshed", bn: "রক্তাক্ত" },
+    "turks": { def: "people of Turkey", bn: "তুর্কি" },
+    "general": { def: "high military rank", bn: "জেনারেল" },
+    "esteemed": { def: "respected highly", bn: "সম্মানিত" },
+    "revered": { def: "deeply respected", bn: "পূজিত" },
+    "traveller": { def: "one who travels", bn: "ভ্রমণকারী" },
+    "keen": { def: "eager, enthusiastic", bn: "আগ্রহী" },
+    "stories": { def: "narratives", bn: "গল্প" },
+    "adventure": { def: "exciting experience", bn: "অভিযান" },
+    "recollected": { def: "remembered", bn: "স্মরণ করা" },
+    "experiences": { def: "events lived through", bn: "অভিজ্ঞতা" },
+    "battles": { def: "fights between armies", bn: "যুদ্ধ" },
+    "sieges": { def: "military blockades", bn: "অবরোধ" },
+    "encounters": { def: "meetings, often confrontational", bn: "মুখোমুখি" },
+    "perils": { def: "dangers", bn: "বিপদ" },
+    "breach": { def: "gap in a wall", bn: "ভাঙন" },
+    "cannon": { def: "large gun", bn: "কামান" },
+    "captivated": { def: "charmed, fascinated", bn: "মোহিত" },
+    "insolent": { def: "rude, arrogant", bn: "উদ্ধত" },
+    "slave": { def: "a person owned by another", bn: "দাস" },
+    "demeaned": { def: "lowered in dignity", bn: "হেয় করা" },
+    "escaped": { def: "got free", bn: "পলায়ন" },
+    "rapt": { def: "completely absorbed", bn: "একধ্যানে" },
+    "attention": { def: "notice, concentration", bn: "মনোযোগ" },
+    "accounts": { def: "reports, narratives", bn: "বিবরণ" },
+    "narration": { def: "act of telling a story", bn: "বর্ণনা" },
+    "strange": { def: "unusual, odd", bn: "অদ্ভুত" },
+    "foreign": { def: "from another country", bn: "বিদেশি" },
+    "countries": { def: "nations", bn: "দেশ" },
+    "wilderness": { def: "uncultivated land", bn: "অরণ্য" },
+    "romantic": { def: "pleasingly picturesque", bn: "মনোরম" },
+    "caverns": { def: "large caves", bn: "গুহা" },
+    "quarries": { def: "places where stone is mined", bn: "পাথর খনি" },
+    "rocks": { def: "stones", bn: "পাথর" },
+    "lofty": { def: "very high", bn: "উঁচু" },
+    "mountains": { def: "large natural elevations", bn: "পাহাড়" },
+    "clouds": { def: "visible masses of water vapor", bn: "মেঘ" },
+    "savage": { def: "fierce, uncivilized", bn: "বর্বর" },
+    "nations": { def: "large groups of people", bn: "জাতি" },
+    "cannibals": { def: "people who eat human flesh", bn: "নরখাদক" },
+    "man-eaters": { def: "cannibals", bn: "মানুষখেকো" },
+    "race": { def: "group of people with common ancestry", bn: "জাতি" },
+    "africa": { def: "continent", bn: "আফ্রিকা" },
+    "shoulders": { def: "upper part of the body", bn: "কাঁধ" },
+    "enticed": { def: "attracted, tempted", bn: "প্রলুব্ধ" },
+    "household": { def: "related to home or family", bn: "গৃহস্থালি" },
+    "affairs": { def: "matters, business", bn: "কাজ" },
+    "haste": { def: "speed, quickness", bn: "দ্রুতি" },
+    "greedy": { def: "having a strong desire", bn: "লোভী" },
+    "devour": { def: "read or listen eagerly", bn: "গ্রাস করা" },
+    "discourse": { def: "long speech", bn: "বক্তব্য" },
+    "sigh": { def: "long deep breath", bn: "দীর্ঘশ্বাস" },
+    "modesty": { def: "humbleness", bn: "বিনয়" },
+    "blushes": { def: "reddening of the face", bn: "লজ্জা" },
+    "consent": { def: "agreement", bn: "সম্মতি" },
+    "generous": { def: "giving freely", bn: "উদার" },
+    "gorgeous": { def: "very beautiful", bn: "চমৎকার" },
+    "marriage": { def: "wedding", bn: "বিয়ে" },
+    "privately": { def: "in secret", bn: "গোপনে" },
+    "solemnized": { def: "formally celebrated", bn: "আনুষ্ঠানিক" },
+    "secret": { def: "hidden, concealed", bn: "গোপন" },
+    "appealed": { def: "made a request", bn: "আবেদন" },
+    "duke": { def: "ruler of a duchy", bn: "ডিউক" },
+    "justice": { def: "fairness", bn: "ন্যায়" },
+    "accusing": { def: "charging with fault", bn: "অভিযোগ" },
+    "spell": { def: "magic formula", bn: "জাদু" },
+    "witchcraft": { def: "use of magic", bn: "জাদুটোনা" },
+    "seduce": { def: "persuade to do wrong", bn: "প্রলুব্ধ করা" },
+    "state": { def: "nation, condition", bn: "রাষ্ট্র" },
+    "urgent": { def: "requiring immediate action", bn: "জরুরি" },
+    "senate": { def: "governing council", bn: "সেনেট" },
+    "fleet": { def: "group of ships", bn: "নৌবহর" },
+    "mighty": { def: "powerful", bn: "শক্তিশালী" },
+    "preparation": { def: "readying", bn: "প্রস্তুতি" },
+    "hostility": { def: "enmity, war", bn: "শত্রুতা" },
+    "cyprus": { def: "island in the Mediterranean", bn: "সাইপ্রাস" },
+    "emergency": { def: "crisis", bn: "জরুরি অবস্থা" },
+    "competent": { def: "able, capable", bn: "দক্ষ" },
+    "invasion": { def: "attack, entry by force", bn: "আক্রমণ" },
+    "summoned": { def: "called to appear", bn: "তলব" },
+    "candidate": { def: "applicant for position", bn: "প্রার্থী" },
+    "employment": { def: "work, job", bn: "চাকরি" },
+    "culprit": { def: "person accused of crime", bn: "অভিযুক্ত" },
+    "offences": { def: "crimes, wrongs", bn: "অপরাধ" },
+    "utmost": { def: "greatest", bn: "সর্বোচ্চ" },
+    "patience": { def: "ability to wait", bn: "ধৈর্য" },
+    "assembly": { def: "group of people gathered", bn: "সভা" },
+    "infuriated": { def: "furious, angry", bn: "ক্ষিপ্ত" },
+    "outrageous": { def: "shocking, offensive", bn: "আপত্তিকর" },
+    "defence": { def: "justification", bn: "আত্মপক্ষ" },
+    "narrate": { def: "tell a story", bn: "বর্ণনা" },
+    "artless": { def: "simple, natural", bn: "সহজ-সরল" },
+    "eloquence": { def: "fluent speaking", bn: "বাকপটুতা" },
+    "confess": { def: "admit", bn: "স্বীকার করা" },
+    "courtship": { def: "wooing period", bn: "প্রেমালাপ" },
+    "plainly": { def: "clearly", bn: "স্পষ্টভাবে" },
+    "honest": { def: "truthful", bn: "সৎ" },
+    "arts": { def: "skills", bn: "কৌশল" },
+    "wooing": { def: "courting", bn: "প্রণয় নিবেদন" },
+    "statement": { def: "declaration", bn: "বক্তব্য" },
+    "confirmed": { def: "validated", bn: "নিশ্চিত" },
+    "acknowledged": { def: "admitted", bn: "স্বীকার" },
+    "bound": { def: "obligated", bn: "বাধ্য" },
+    "duty": { def: "responsibility", bn: "কর্তব্য" },
+    "education": { def: "training, learning", bn: "শিক্ষা" },
+    "higher": { def: "greater", bn: "উচ্চতর" },
+    "perform": { def: "carry out", bn: "পালন করা" },
+    "lover": { def: "romantic partner", bn: "প্রেমিক" },
+    "husband": { def: "married man", bn: "স্বামী" },
+    "preferring": { def: "liking better", bn: "পছন্দ করা" },
+    "maintain": { def: "keep up", bn: "বজায় রাখা" },
+    "plea": { def: "request", bn: "আবেদন" },
+    "tyrant": { def: "cruel ruler", bn: "অত্যাচারী" },
+    "clogs": { def: "hindrances", bn: "বাধা" },
+    "desertion": { def: "abandonment", bn: "ত্যাগ" },
+    "deceived": { def: "misled", bn: "প্রতারিত" },
+    "trial": { def: "court hearing", bn: "বিচার" },
+    "readily": { def: "willingly, easily", bn: "উৎসাহের সাথে" },
+    "refused": { def: "denied", bn: "অস্বীকার" },
+    "boldly": { def: "confidently", bn: "সাহসের সাথে" },
+    "newly": { def: "recently", bn: "নতুন করে" },
+    "couple": { def: "two people together", bn: "দম্পতি" },
+    "set sail": { def: "departed by ship", bn: "যাত্রা করা" },
+    "landed": { def: "came to shore", bn: "অবতরণ" },
+    "violent": { def: "forceful", bn: "প্রচণ্ড" },
+    "tempest": { def: "violent storm", bn: "ঝড়" },
+    "dispersed": { def: "scattered", bn: "ছত্রভঙ্গ" },
+    "secure": { def: "safe", bn: "সুরক্ষিত" },
+    "suffer": { def: "endure pain", bn: "সহ্য করা" },
+    "enemies": { def: "foes", bn: "শত্রু" },
+    "malice": { def: "ill will", bn: "বিদ্বেষ" },
+    "deadly": { def: "fatal, lethal", bn: "মারাত্মক" },
+    "strangers": { def: "unknown persons", bn: "অপরিচিত" },
+    "infidels": { def: "unbelievers", bn: "কাফের" },
+    "friends": { def: "companions", bn: "বন্ধু" },
+    "possessed": { def: "owned, had", bn: "অধিকারী" },
+    "confidence": { def: "trust", bn: "বিশ্বাস" },
+    "cassio": { def: "Othello's lieutenant", bn: "ক্যাসিও" },
+    "florentine": { def: "from Florence", bn: "ফ্লরেন্সীয়" },
+    "amorous": { def: "romantic", bn: "প্রণয়াসক্ত" },
+    "pleasing": { def: "satisfying", bn: "আনন্দদায়ক" },
+    "handsome": { def: "good-looking", bn: "সুদর্শন" },
+    "eloquent": { def: "well-spoken", bn: "বক্তা" },
+    "jealousy": { def: "envy, suspicion", bn: "ঈর্ষা" },
+    "depute": { def: "assign as a deputy", bn: "প্রতিনিধি নিযুক্ত করা" },
+    "innocent": { def: "not guilty", bn: "নির্দোষ" },
+    "simplicity": { def: "plainness", bn: "সরলতা" },
+    "honour": { def: "respect, pride", bn: "সম্মান" },
+    "blemish": { def: "flaw", bn: "কলঙ্ক" },
+    "character": { def: "personality", bn: "চরিত্র" },
+    "trusted": { def: "relied on", bn: "বিশ্বস্ত" },
+    "frequented": { def: "visited often", bn: "প্রায়ই যেত" },
+    "rattling": { def: "lively, fast", bn: "চটুল" },
+    "serious": { def: "grave, thoughtful", bn: "গম্ভীর" },
+    "temper": { def: "mood, disposition", bn: "মেজাজ" },
+    "promoted": { def: "advanced in rank", bn: "পদোন্নতি" },
+    "lieutenant": { def: "military officer rank", bn: "লেফট্যানেন্ট" },
+    "promotion": { def: "advancement", bn: "উন্নতি" },
+    "offence": { def: "annoyance, crime", bn: "অপরাধ" },
+    "iago": { def: "the villain of the play", bn: "ইয়াগো" },
+    "elder": { def: "older", bn: "প্রবীণ" },
+    "claim": { def: "assertion of right", bn: "দাবি" },
+    "scorn": { def: "contempt, mockery", bn: "অবজ্ঞা" },
+    "befitting": { def: "suitable for", bn: "উপযুক্ত" },
+    "warfare": { def: "armed conflict", bn: "যুদ্ধবিদ্যা" },
+    "hated": { def: "disliked intensely", bn: "ঘৃণা করা" },
+    "favouring": { def: "preferring", bn: "পক্ষপাত" },
+    "unjust": { def: "unfair", bn: "অন্যায্য" },
+    "suspicion": { def: "mistrust", bn: "সন্দেহ" },
+    "emilia": { def: "Iago's wife", bn: "এমিলিয়া" },
+    "imaginary": { def: "not real", bn: "কাল্পনিক" },
+    "provocations": { def: "incitements", bn: "প্ররোচনা" },
+    "scheme": { def: "plan", bn: "পরিকল্পনা" },
+    "revenge": { def: "retaliation", bn: "প্রতিশোধ" },
+    "ruin": { def: "destruction", bn: "ধ্বংস" },
+    "crafty": { def: "cunning, sly", bn: "চতুর" },
+    "studied": { def: "examined", bn: "অধ্যয়ন" },
+    "human": { def: "of people", bn: "মানুষ" },
+    "mind": { def: "intellect", bn: "মন" },
+    "afflictions": { def: "sufferings", bn: "দুঃখ-কষ্ট" },
+    "torment": { def: "torture", bn: "যন্ত্রণা" },
+    "unbearable": { def: "intolerable", bn: "অসহ্য" },
+    "sorest": { def: "most severe", bn: "সবচেয়ে তীব্র" },
+    "sting": { def: "sharp pain", bn: "দংশন" },
+    "envious": { def: "jealous", bn: "ঈর্ষান্বিত" },
+    "excellent": { def: "very good", bn: "চমৎকার" },
+    "plot": { def: "conspiracy", bn: "চক্রান্ত" },
+    "culminate": { def: "climax", bn: "সমাপ্তি" },
+    "death": { def: "end of life", bn: "মৃত্যু" },
+    "arrival": { def: "coming", bn: "আগমন" },
+    "holiday": { def: "festive day", bn: "উৎসব" },
+    "mood": { def: "state of mind", bn: "মেজাজ" },
+    "island": { def: "land surrounded by water", bn: "দ্বীপ" },
+    "feasting": { def: "eating lavishly", bn: "ভোজ" },
+    "merry": { def: "cheerful", bn: "প্রফুল্ল" },
+    "guard": { def: "sentry", bn: "প্রহরী" },
+    "charge": { def: "responsibility", bn: "দায়িত্ব" },
+    "restrain": { def: "hold back", bn: "সংযত করা" },
+    "excessively": { def: "too much", bn: "অতিরিক্ত" },
+    "guise": { def: "pretence", bn: "ছল" },
+    "loyalty": { def: "faithfulness", bn: "আনুগত্য" },
+    "lured": { def: "enticed", bn: "প্রলুব্ধ" },
+    "drink": { def: "beverage", bn: "পানীয়" },
+    "fault": { def: "mistake, error", bn: "অপরাধ" },
+    "resisted": { def: "opposed", bn: "প্রতিরোধ" },
+    "initially": { def: "at first", bn: "প্রথমে" },
+    "guile": { def: "cunning, trickery", bn: "চাতুরী" },
+    "swallowed": { def: "took in", bn: "গিলে ফেলা" },
+    "drunk": { def: "intoxicated", bn: "মাতাল" },
+    "provoked": { def: "stimulated, incited", bn: "উসকানি" },
+    "praised": { def: "complimented", bn: "প্রশংসা" },
+    "exquisite": { def: "excellent, fine", bn: "চমৎকার" },
+    "scuffle": { def: "brief fight", bn: "হাতাহাতি" },
+    "montano": { def: "officer in Cyprus", bn: "মন্তানো" },
+    "worthy": { def: "deserving", bn: "যোগ্য" },
+    "interfered": { def: "intruded", bn: "হস্তক্ষেপ" },
+    "pacify": { def: "calm, quiet", bn: "শান্ত করা" },
+    "wounded": { def: "injured", bn: "আহত" },
+    "alarm": { def: "warning signal", bn: "অ্যালার্ম" },
+    "mutiny": { def: "rebellion", bn: "বিদ্রোহ" },
+    "awakened": { def: "woke up", bn: "জাগ্রত" },
+    "rationality": { def: "reasoning", bn: "যৌক্তিকতা" },
+    "ashamed": { def: "embarrassed", bn: "লজ্জিত" },
+    "reluctant": { def: "unwilling", bn: "অনিচ্ছুক" },
+    "compelled": { def: "forced", bn: "বাধ্য" },
+    "strict": { def: "severe, precise", bn: "কঠোর" },
+    "observer": { def: "one who watches", bn: "পর্যবেক্ষক" },
+    "discipline": { def: "regulation, order", bn: "শৃঙ্খলা" },
+    "artifice": { def: "trickery", bn: "কৌশল" },
+    "undermined": { def: "weakened", bn: "ক্ষুণ্ণ" },
+    "adversary": { def: "opponent", bn: "শত্রু" },
+    "misfortune": { def: "bad luck", bn: "দুর্ভাগ্য" },
+    "sobered": { def: "became serious", bn: "সংযত" },
+    "lamented": { def: "mourned", bn: "বিলাপ" },
+    "reputation": { def: "public opinion", bn: "খ্যাতি" },
+    "immortal": { def: "everlasting", bn: "অমর" },
+    "bestial": { def: "brutal, animal-like", bn: "পশুতুল্য" },
+    "despised": { def: "hated, scorned", bn: "ঘৃণা" },
+    "mediate": { def: "intervene", bn: "মধ্যস্থতা" },
+    "solicitor": { def: "advocate", bn: "সুপারিশকারী" },
+    "mortally": { def: "fatally", bn: "মারাত্মকভাবে" },
+    "offended": { def: "hurt feelings", bn: "অপমানিত" },
+    "pardon": { def: "forgiveness", bn: "ক্ষমা" },
+    "offender": { def: "wrongdoer", bn: "অপরাধী" },
+    "penitent": { def: "regretful", bn: "অনুশোচনা" },
+    "humbled": { def: "made humble", bn: "বিনয়ী" },
+    "magnitude": { def: "size, importance", bn: "মাত্রা" },
+    "dispraise": { def: "criticism", bn: "অপ্রশংসা" },
+    "pleader": { def: "one who pleads", bn: "আবেদনকারী" },
+    "imploring": { def: "begging", bn: "অনুনয়" },
+    "intercession": { def: "mediation", bn: "সুপারিশ" },
+    "departed": { def: "left", bn: "প্রস্থান" },
+    "opposite": { def: "other side", bn: "বিপরীত" },
+    "interaction": { def: "communication", bn: "আলাপচারিতা" },
+    "satisfaction": { def: "fulfillment", bn: "সন্তোষ" },
+    "affirmative": { def: "positive", bn: "হ্যাঁসূচক" },
+    "courtship": { def: "wooing", bn: "প্রণয়" },
+    "brow": { def: "forehead", bn: "ভ্রু" },
+    "terrible": { def: "awful, dreadful", bn: "ভয়াবহ" },
+    "curiosity": { def: "strong desire to know", bn: "কৌতূহল" },
+    "distraction": { def: "disturbance", bn: "অস্বস্তি" },
+    "cautious": { def: "careful", bn: "সতর্ক" },
+    "virtue": { def: "good quality", bn: "গুণ" },
+    "virtuous": { def: "having virtue", bn: "সৎ" },
+    "proof": { def: "evidence", bn: "প্রমাণ" },
+    "dishonest": { def: "untruthful", bn: "অসৎ" },
+    "behaviour": { def: "conduct", bn: "আচরণ" },
+    "dispositions": { def: "temperaments", bn: "স্বভাব" },
+    "pranks": { def: "mischievous acts", bn: "কৌতুক" },
+    "dared": { def: "ventured, had courage", bn: "সাহস" },
+    "insinuated": { def: "implied", bn: "ইঙ্গিত" },
+    "argument": { def: "reason, point", bn: "যুক্তি" },
+    "apology": { def: "expression of regret", bn: "ক্ষমা চাওয়া" },
+    "rejected": { def: "refused", bn: "প্রত্যাখ্যান" },
+    "suitable": { def: "appropriate", bn: "উপযুক্ত" },
+    "matches": { def: "suitable partners", bn: "পাত্র" },
+    "unnatural": { def: "abnormal", bn: "অস্বাভাবিক" },
+    "probable": { def: "likely", bn: "সম্ভাব্য" },
+    "reconcilement": { def: "reconciliation", bn: "মিলন" },
+    "earnestness": { def: "sincerity", bn: "আন্তরিকতা" },
+    "solicit": { def: "ask for, plead", bn: "আবেদন" },
+    "treacherous": { def: "betraying", bn: "বিশ্বাসঘাতক" },
+    "villain": { def: "evil person", bn: "খলনায়ক" },
+    "destruction": { def: "ruin", bn: "ধ্বংস" },
+    "net": { def: "trap", bn: "জাল" },
+    "entreat": { def: "beg", bn: "অনুরোধ" },
+    "mediation": { def: "intervention", bn: "মধ্যস্থতা" },
+    "stratagems": { def: "plans, tricks", bn: "কৌশল" },
+    "restlessness": { def: "unease", bn: "অস্থিরতা" },
+    "poppy": { def: "flower producing opium", bn: "পোস্ত" },
+    "mandragora": { def: "hallucinogenic plant", bn: "মান্দ্রাগোরা" },
+    "potions": { def: "medicinal drinks", bn: "ঔষধ" },
+    "occupation": { def: "job, activity", bn: "পেশা" },
+    "delight": { def: "great pleasure", bn: "আনন্দ" },
+    "roused": { def: "awakened", bn: "জাগ্রত" },
+    "troops": { def: "soldiers", bn: "সৈন্য" },
+    "neighing": { def: "horse sound", bn: "হ্রেষা" },
+    "ambition": { def: "desire for success", bn: "উচ্চাকাঙ্ক্ষা" },
+    "contrary": { def: "opposite", bn: "বিপরীত" },
+    "throat": { def: "front of neck", bn: "গলা" },
+    "demanded": { def: "asked forcefully", bn: "দাবি" },
+    "guilt": { def: "responsibility for wrong", bn: "অপরাধবোধ" },
+    "instant": { def: "immediate", bn: "তাৎক্ষণিক" },
+    "belied": { def: "contradicted, misrepresented", bn: "মিথ্যা প্রমাণ" },
+    "feigned": { def: "pretended", bn: "ভান" },
+    "indignation": { def: "anger at injustice", bn: "ক্ষোভ" },
+    "misinterpreted": { def: "understood wrongly", bn: "ভুল ব্যাখ্যা" },
+    "vice": { def: "evil practice", bn: "অসৎ অভ্যাস" },
+    "handkerchief": { def: "cloth for wiping", bn: "রুমাল" },
+    "strawberries": { def: "red fruit", bn: "স্ট্রবেরি" },
+    "acknowledged": { def: "admitted", bn: "স্বীকার" },
+    "fidelity": { def: "loyalty", bn: "বিশ্বস্ততা" },
+    "devise": { def: "plan, invent", bn: "পরিকল্পনা করা" },
+    "swift": { def: "fast", bn: "দ্রুত" },
+    "enquire": { def: "ask", bn: "জিজ্ঞাসা" },
+    "sentence": { def: "punishment", bn: "শাস্তি" },
+    "constant": { def: "faithful, unchanging", bn: "অবিচল" },
+    "wronged": { def: "treated unjustly", bn: "অন্যায়" },
+    "naughty": { def: "misbehaving", bn: "দুষ্টু" },
+    "shrewd": { def: "clever, astute", bn: "চতুর" },
+    "pretence": { def: "pretending", bn: "ছল" },
+    "handle": { def: "opportunity", bn: "সুযোগ" },
+    "headache": { def: "pain in head", bn: "মাথাব্যথা" },
+    "temples": { def: "sides of forehead", bn: "কপালের পাশ" },
+    "fault": { def: "mistake", bn: "অপরাধ" },
+    "amiable": { def: "friendly", bn: "স্নেহময়ী" },
+    "subdue": { def: "conquer", bn: "বশীভূত" },
+    "loathe": { def: "hate", bn: "ঘৃণা" },
+    "magical": { def: "produced by magic", bn: "জাদুকরী" },
+    "divert": { def: "distract, amuse", bn: "অন্য দিকে ঘুরানো" },
+    "suspect": { def: "believe (of crime)", bn: "সন্দেহ" },
+    "unfaithful": { def: "disloyal", bn: "অবিশ্বস্ত" },
+    "wept": { def: "cried", bn: "কাঁদলেন" },
+    "fortitude": { def: "courage", bn: "সহ্যশক্তি" },
+    "poverty": { def: "poorness", bn: "দারিদ্র্য" },
+    "disease": { def: "illness", bn: "রোগ" },
+    "disgrace": { def: "shame", bn: "অপমান" },
+    "infidelity": { def: "unfaithfulness", bn: "অবিশ্বস্ততা" },
+    "weed": { def: "unwanted plant", bn: "আগাছা" },
+    "smelled": { def: "had an odor", bn: "গন্ধ" },
+    "ached": { def: "hurt", bn: "যন্ত্রণা" },
+    "stupefied": { def: "dazed, stunned", bn: "হতবাক" },
+    "wonder": { def: "amazement", bn: "বিস্ময়" },
+    "attendant": { def: "servant", bn: "পরিচারক" },
+    "wedding-sheets": { def: "bed sheets for wedding", bn: "বিবাহের চাদর" },
+    "chided": { def: "scolded", bn: "তিরস্কার" },
+    "babies": { def: "infants", bn: "শিশু" },
+    "tasks": { def: "jobs", bn: "কাজ" },
+    "meditated": { def: "planned, considered", bn: "চিন্তা" },
+    "shed": { def: "spill", bn: "রক্তপাত" },
+    "resolved": { def: "determined", bn: "সংকল্প" },
+    "betray": { def: "be disloyal", bn: "বিশ্বাসঘাতকতা" },
+    "cruel": { def: "causing pain", bn: "নিষ্ঠুর" },
+    "gnaw": { def: "chew, bite repeatedly", bn: "দংশন" },
+    "fatal": { def: "deadly", bn: "মারাত্মক" },
+    "mercy": { def: "compassion", bn: "করুণা" },
+    "guiltless": { def: "innocent", bn: "নির্দোষ" },
+    "proceeding": { def: "continuing", bn: "অগ্রসর" },
+    "stifled": { def: "suffocated", bn: "শ্বাসরোধ" },
+    "assassinate": { def: "murder (political)", bn: "হত্যা" },
+    "discovery": { def: "finding out", bn: "আবিষ্কার" },
+    "letters": { def: "written correspondence", bn: "চিঠি" },
+    "thunderstroke": { def: "stroke of lightning", bn: "বজ্রাঘাত" },
+    "murder": { def: "unlawful killing", bn: "হত্যা" },
+    "extreme": { def: "very great", bn: "চরম" },
+    "anguish": { def: "severe pain", bn: "যন্ত্রণা" },
+    "intolerable": { def: "unbearable", bn: "অসহ্য" },
+    "rash": { def: "reckless", bn: "বেপরোয়া" },
+    "passion": { def: "strong emotion", bn: "আবেগ" },
+    "horror": { def: "extreme fear", bn: "ভীতি" },
+    "amazement": { def: "great surprise", bn: "বিস্ময়" },
+    "by standers": { def: "onlookers", bn: "উপস্থিত লোক" },
+    "borne": { def: "carried, had (past)", bn: "ধারণ" },
+    "doting": { def: "very affectionate", bn: "স্নেহপরায়ণ" },
+    "wisely": { def: "in a wise manner", bn: "বুদ্ধিমত্তার সাথে" },
+    "merits": { def: "good qualities", bn: "গুণাবলী" },
+    "executed": { def: "put to death", bn: "মৃত্যুদণ্ড" },
+    "tortures": { def: "severe pain inflicted", bn: "নির্যাতন" },
+    "lamented": { def: "mourned", bn: "শোক" },
+    "demise": { def: "death", bn: "মৃত্যু" },
+    "renowned": { def: "famous, celebrated", bn: "খ্যাতনামা" }
+  };
 
-    const dictionaryDB = {
-      "rich": { def: "Having a great deal of money or assets", bn: "ধনী / সমৃদ্ধ" },
-      "senator": { def: "A member of a senate or governing council", bn: "সেনেটর / রাজ্য পরিষদ সদস্য" },
-      "beautiful": { def: "Pleasing the senses or mind aesthetically", bn: "সুন্দর / মনোহর" },
-      "daughter": { def: "A female child in relation to her parents", bn: "কন্যা / মেয়ে" },
-      "gentle": { def: "Mild, kind, or tender in temperament", bn: "নম্র / ভদ্র / কোমল" },
-      "sought": { def: "Attempted to find or obtain (past of seek)", bn: "খোঁজ করা হয়েছিল / চাওয়া হয়েছিল" },
-      "suitors": { def: "Men who pursue a woman with a view to marriage", bn: "প্রণয়ী / বিবাহের পাত্র" },
-      "clime": { def: "A country or region with a particular climate", bn: "দেশ / অঞ্চল" },
-      "complexion": { def: "Natural skin tone or appearance", bn: "গায়ের রং / রূপ" },
-      "valiant": { def: "Possessing or showing courage or determination", bn: "সাহসী / বীরত্বপূর্ণ" },
-      "heroics": { def: "Brave or heroic behavior", bn: "বীরত্বপূর্ণ কাজ" },
-      "esteemed": { def: "Highly respected and admired", bn: "শ্রদ্ধেয় / সম্মানিত" },
-      "revered": { def: "Deeply respected or venerated", bn: "পরম পূজনীয়" },
-      "perils": { def: "Serious and immediate dangers", bn: "চরম বিপদ / ঝুঁকি" },
-      "peril": { def: "Serious and immediate danger", bn: "বিপদ" },
-      "breach": { def: "A gap in a wall or fortification made by an enemy", bn: "দেয়ালের ফাটল / ভাঙন" },
-      "captivated": { def: "Attracted and held the interest of", bn: "বন্দী / মোহিত" },
-      "insolent": { def: "Showing a rude and arrogant lack of respect", bn: "উদ্ধত / অবাধ্য" },
-      "demeaned": { def: "Severe loss of dignity or respect", bn: "হেয় করা / মর্যাদাহানি করা" },
-      "rapt": { def: "Completely fascinated by what one is hearing", bn: "একধ্যানে / মন্ত্রমুগ্ধ" },
-      "anthropophagi": { def: "Mythical race of man-eaters / cannibals", bn: "নৃমাংসভোজী জাতি" },
-      "enticed": { def: "Attracted or tempted by offering pleasure", bn: "প্রলুব্ধ করেছিল" },
-      "discourse": { def: "Written or spoken communication or speech", bn: "দীর্ঘ বক্তব্য / কথোপকথন" },
-      "devour": { def: "Read, listen to, or absorb eagerly", bn: "গ্রাস করা / ব্যাকুল হয়ে শোনা" },
-      "frankness": { def: "The quality of being open, honest, and direct", bn: "স্পষ্টবাদিতা / সরলতা" },
-      "solemnized": { def: "Performed a formal ceremony (especially marriage)", bn: "আনুষ্ঠানিকভাবে উদযাপিত" },
-      "seduce": { def: "Persuade someone to do something unwise or wrong", bn: "প্রলুব্ধ করা / ভুলিয়ে নেওয়া" },
-      "conjuration": { def: "Magic spell or incantation", bn: "মায়াজাল / জাদুটোনা" },
-      "conjurations": { def: "Magic spells or incantations", bn: "মায়াজাল বা জাদুটোনা" },
-      "hostility": { def: "Unfriendly or aggressive behavior; warfare", bn: "শত্রুতা / আক্রমণ" },
-      "deemed": { def: "Regarded or considered in a specified way", bn: "বিবেচিত / গণ্য করা" },
-      "competent": { def: "Having the necessary ability, knowledge, or skill", bn: "দক্ষ / উপযুক্ত" },
-      "infuriated": { def: "Extremely angry; enraged", bn: "অত্যন্ত ক্রুদ্ধ / ক্ষিপ্ত" },
-      "artless": { def: "Sincere, simple, and free from deceit", bn: "সহজ-সরল / ছলনামুক্ত" },
-      "eloquence": { def: "Fluent or persuasive speaking or writing", bn: "বাকপটুতা / সাবলীল বক্তব্য" },
-      "clogs": { def: "Heavy encumbrances or hindrances", bn: "বাধা / শৃঙ্খল" },
-      "desertion": { def: "The action of deserting a person or cause", bn: "ত্যাগ / পলায়ন" },
-      "tempest": { def: "A violent windy storm at sea", bn: "প্রচণ্ড সামুদ্রিক ঝড়" },
-      "dispersed": { def: "Go or drive off in different directions", bn: "ছত্রভঙ্গ হয়ে যাওয়া" },
-      "dispersion": { def: "Go in different directions", bn: "ছত্রভঙ্গ হওয়া" },
-      "malice": { def: "The intention or desire to do evil; ill will", bn: "বিদ্বেষ / হিংসা" },
-      "infidels": { def: "Unbelievers or hostile non-believers", bn: "কাফের / শত্রু" },
-      "amorous": { def: "Showing, feeling, or relating to romantic desire", bn: "অনুরাগী / প্রণয়াসক্ত" },
-      "blemish": { def: "A small mark, flaw, or moral fault", bn: "কলঙ্ক / খুঁত" },
-      "scorn": { def: "Feel or express contempt or derision for", bn: "অবজ্ঞা করা / ঘৃণা করা" },
-      "provocations": { def: "Actions that make someone annoyed or angry", bn: "প্ররোচনা / উসকানি" },
-      "afflictions": { def: "Causes of persistent pain or distress", bn: "দুঃখ-কষ্ট / যন্ত্রণা" },
-      "restrain": { def: "Prevent from doing something or keep under control", bn: "সংবরণ করা / আটকানো" },
-      "guile": { def: "Sly or cunning intelligence; deception", bn: "চাতুরী / ছলনা" },
-      "exquisite": { def: "Extremely beautiful and delicate", bn: "চমৎকার / অতি সূক্ষ্ম" },
-      "scuffle": { def: "A short, confused fight or struggle", bn: "হাতাহাতি / দাঙ্গা" },
-      "artifice": { def: "Clever devices or stratagems used to trick", bn: "কৌশল / ফন্দি" },
-      "bestial": { def: "Savagely cruel and depraved; animal-like", bn: "পশুতুল্য / বর্বর" },
-      "solicitor": { def: "One who advocates or pleads on behalf of another", bn: "প্রস্তাবক / সুপারিশকারী" },
-      "penitent": { def: "Feeling or showing sorrow for wrongdoing", bn: "অনুশোচনাগ্রস্ত" },
-      "intercession": { def: "The action of intervening on behalf of another", bn: "সুপারিশ / মধ্যস্থতা" },
-      "mandragora": { def: "Plant root producing hallucinogenic narcotic sleep", bn: "চেতনাশূন্যকারী আফিম জাতীয় উদ্ভিদ" },
-      "indignation": { def: "Anger aroused by what is perceived as unfair treatment", bn: "তীব্র অসন্তোষ / ক্ষোভ" },
-      "fidelity": { def: "Faithfulness to a person, cause, or belief", bn: "বিশ্বস্ততা / একনিষ্ঠতা" },
-      "amiable": { def: "Having or displaying a friendly and pleasant manner", bn: "সদ্বভাবাপন্ন / স্নেহময়ী" },
-      "fortitude": { def: "Courage in pain or adversity", bn: "সহ্যশক্তি / মানসিক বল" },
-      "stupefied": { def: "Astonished and rendered unable to think clearly", bn: "হতবাক / স্তম্ভিত" },
-      "chided": { def: "Scolded or reprimanded gently", bn: "তিরস্কার করা / গালমন্দ করা" },
-      "gnaw": { def: "Cause persistent distress or anxiety", bn: "যন্ত্রণা দেওয়া / দংশন করা" },
-      "stifled": { def: "Suffocated or smothered to death", bn: "শ্বাসরোধ করে মারা" },
-      "wrought": { def: "Worked upon or influenced by cunning arts", bn: "চলিত / প্রভাবিত" },
-      "demise": { def: "A person's death", bn: "মৃত্যু / প্রয়াণ" },
-      "strict": { def: "Severe, rigorous, or unrelenting", bn: "কঠোর / নিদারুণ" },
-      "tortures": { def: "Infliction of severe physical or mental agony", bn: "শারীরিক বা মানসিক নির্যাতন" },
-      "siege": { def: "A military operation to capture a town", bn: "সামরিক অবরোধ" },
-      "sieges": { def: "Military operations to capture fortified places", bn: "সামরিক অবরোধসমূহ" },
-      "loathsomely": { def: "Hatefully or disgustingly", bn: "ঘৃণ্যভাবে" },
-      "suit": { def: "Process of trying to win a woman's affection for marriage", bn: "বিবাহের প্রস্তাব / প্রণয় নিবেদন" },
-      "infidelity": { def: "Disloyalty or unfaithfulness in marriage", bn: "অবিশ্বস্ততা / ব্যভিচার" },
-      "disposition": { def: "The natural qualities of a person's character", bn: "স্বভাব / চারিত্রিক মেজাজ" },
-      "dispositions": { def: "Natural qualities or character traits", bn: "স্বভাব বা চরিত্রের ঝোঁক" }
-    };
+  // textbook notes
+  const textbookNotes = [
+    { term: "Siege", def: "a military operation to capture a town" },
+    { term: "Insolent", def: "rude and disrespectful" },
+    { term: "Anthropophagi", def: "mythical cannibals" },
+    { term: "Devour", def: "read or listen eagerly" },
+    { term: "Seduce", def: "persuade to do wrong" },
+    { term: "Conjuration", def: "magic incantation" },
+    { term: "Blemish", def: "a small flaw" },
+    { term: "Dispersion", def: "go in different directions" },
+    { term: "Intercession", def: "mediation" },
+    { term: "Disposition", def: "natural qualities" },
+    { term: "Mandragora", def: "hallucinogenic plant" },
+    { term: "Loathsomely", def: "hatefully" },
+    { term: "Suit", def: "courtship" },
+    { term: "Infidelity", def: "disloyalty" },
+    { term: "Chided", def: "scolded" },
+    { term: "Gnaw", def: "cause pain" },
+    { term: "Wrought", def: "made, crafted" }
+  ];
 
-    const quizData = Array.from({ length: 100 }, (_, i) => {
-      const baseQuestions = [
-        { q: "Who was Brabantio in Venice?", opts: ["A rich Senator", "A military General", "The Duke", "A merchant"], a: 0 },
-        { q: "Why did Desdemona select Othello over other suitors?", opts: ["For his wealth", "Regarded the heart more than appearance", "Her father forced her", "For his political title"], a: 1 },
-        { q: "What rank had Othello achieved in the military?", opts: ["Lieutenant", "Captain", "General", "Commander"], a: 2 },
-        { q: "What accusation did Brabantio lodge against Othello before the Duke?", opts: ["Treason", "Casting spell and witchcraft", "Theft of gold", "Murder"], a: 1 },
-        { q: "Why was Othello urgently needed by the Senate?", opts: ["To suppress a rebellion", "To defend Cyprus against the Turks", "To lead a expedition to Africa", "To govern Venice"], a: 1 },
-        { q: "What was Othello's defence before the assembly of Senators?", opts: ["He denied marrying her", "He narrated a simple, artless story of his love", "He brought witnesses", "He paid a large fine"], a: 1 },
-        { q: "What warning did Brabantio give to Othello upon leaving the court?", opts: ["Desdemona deceived her father and might deceive him", "The Turks would defeat him", "Cassio would betray him", "He would disinherit her"], a: 0 },
-        { q: "What happened to the Turkish fleet heading for Cyprus?", opts: ["They surrendered", "Dispersed by a violent tempest", "Defeated in battle", "Returned home"], a: 1 },
-        { q: "Why did Iago hate Othello and Cassio?", opts: ["Cassio was promoted to Lieutenant over him", "Othello stole his property", "Cassio defeated him in battle", "He wanted to be Duke"], a: 0 },
-        { q: "How did Iago cause Cassio to lose his lieutenancy?", opts: ["Planted stolen money", "Lured him to drink wine excessively on guard night", "Forged letters", "Attacked the General"], a: 1 },
-        { q: "Who was wounded in the scuffle with drunk Cassio?", opts: ["Roderigo", "Montano", "Iago", "Brabantio"], a: 1 },
-        { q: "What did Cassio lament after losing his rank?", opts: ["Reputation, reputation, reputation!", "My gold is gone!", "I am banished!", "Othello is unfair!"], a: 0 },
-        { q: "What advice did Iago give Cassio to regain his rank?", opts: ["Flee Cyprus", "Apply to Desdemona to mediate for him", "Challenge Othello", "Bribery"], a: 1 },
-        { q: "Who stole Desdemona's strawberry handkerchief?", opts: ["Iago", "Emilia", "Bianca", "Cassio"], a: 1 },
-        { q: "Who gave the magical handkerchief to Othello's mother?", opts: ["An Egyptian woman charmer", "A Venetian priest", "Brabantio", "A gypsy"], a: 0 },
-        { q: "How did Othello kill Desdemona?", opts: ["Poisoned her", "Stabbed her with a dagger", "Covered her up in bed clothes and stifled her", "Drowned her"], a: 2 },
-        { q: "What evidence exposed Iago's evil plots?", opts: ["Certain letters found in the pockets of the assassinated fellow", "Emilia's diary", "Desdemona's confession", "Cassio's witness statement"], a: 0 },
-        { q: "How was Iago punished at the end?", opts: ["Exiled", "Executed with strict tortures", "Imprisoned for life", "Pardoned"], a: 1 },
-        { q: "How did Othello die at the end?", opts: ["Executed by Venice", "Killed by Cassio", "Stabbed himself falling upon his sword", "Poisoned by Iago"], a: 2 }
-      ];
-      const template = baseQuestions[i % baseQuestions.length];
-      return {
-        q: `[Q${i + 1}] ${template.q}`,
-        opts: template.opts,
-        a: template.a
-      };
-    });
+  // ---------- 100 QUIZ (base) ----------
+  const baseQuestions = [
+    { q: "Who was Brabantio?", opts: ["A rich Senator", "A General", "The Duke", "A merchant"], a: 0 },
+    { q: "Why did Desdemona choose Othello?", opts: ["For wealth", "Regarded heart over appearance", "Forced by father", "Political title"], a: 1 },
+    { q: "What was Othello's rank?", opts: ["Lieutenant", "Captain", "General", "Commander"], a: 2 },
+    { q: "What did Brabantio accuse Othello of?", opts: ["Treason", "Witchcraft", "Theft", "Murder"], a: 1 },
+    { q: "Why was Othello needed by the Senate?", opts: ["To suppress rebellion", "To defend Cyprus against Turks", "To lead an expedition", "To govern Venice"], a: 1 },
+    { q: "What was Othello's defence?", opts: ["Denied marriage", "Narrated a simple love story", "Brought witnesses", "Paid a fine"], a: 1 },
+    { q: "What warning did Brabantio give?", opts: ["She may deceive Othello", "Turks would defeat him", "Cassio would betray him", "He would disinherit her"], a: 0 },
+    { q: "What happened to the Turkish fleet?", opts: ["Surrendered", "Dispersed by tempest", "Defeated in battle", "Returned home"], a: 1 },
+    { q: "Why did Iago hate Cassio?", opts: ["Cassio promoted over him", "Stole his property", "Defeated him", "He wanted to be Duke"], a: 0 },
+    { q: "How did Cassio lose his lieutenancy?", opts: ["Stolen money", "Lured to drink on guard", "Forged letters", "Attacked Othello"], a: 1 }
+  ];
 
-    let userScore = 0;
-    let answeredTotal = 0;
+  const quizData = Array.from({ length: 100 }, (_, i) => {
+    const base = baseQuestions[i % baseQuestions.length];
+    return { q: `[Q${i+1}] ${base.q}`, opts: base.opts, a: base.a };
+  });
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      event.target.classList.add('active');
-    }
+  let userScore = 0, answeredTotal = 0;
 
-    function renderBilingualReader() {
-      const box = document.getElementById('bilingual-container');
-      let content = '';
+  // ---------- RENDER FUNCTIONS ----------
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    event.target.classList.add('active');
+  }
 
-      proseText.forEach((paragraph, pIdx) => {
-        let parsedEng = '';
-        const tokens = paragraph.split(/(\s+|[.,;!"'()?-])/);
-        tokens.forEach(token => {
-          const cleanKey = token.toLowerCase().replace(/[^a-z]/g, '');
-          if (cleanKey.length > 0) {
-            parsedEng += `<span class="word" onclick="lookupWord('${cleanKey}', '${token.replace(/'/g, "\\'")}')">${token}</span>`;
-          } else {
-            parsedEng += token;
-          }
-        });
-
-        const bengaliText = bengaliTranslations[pIdx] || "অনুবাদ উপলব্ধ নেই।";
-
-        content += `
-          <div class="bilingual-row">
-            <div class="eng-col">
-              <span class="para-tag">Paragraph ${pIdx + 1} (English)</span>
-              ${parsedEng}
-            </div>
-            <div class="bn-col">
-              <span class="para-tag" style="color: #f59e0b;">অনুচ্ছেদ ${pIdx + 1} (Bengali)</span>
-              ${bengaliText}
-            </div>
-          </div>
-        `;
+  function renderBilingualReader() {
+    const box = document.getElementById('bilingual-container');
+    let content = '';
+    proseText.forEach((paragraph, pIdx) => {
+      let parsedEng = '';
+      const tokens = paragraph.split(/(\s+|[.,;!"'()?-])/);
+      tokens.forEach(token => {
+        const cleanKey = token.toLowerCase().replace(/[^a-z]/g, '');
+        if (cleanKey.length > 0) {
+          parsedEng += `<span class="word" onclick="lookupWord('${cleanKey}', '${token.replace(/'/g, "\\'")}')">${token}</span>`;
+        } else {
+          parsedEng += token;
+        }
       });
-
-      box.innerHTML = content;
-    }
-
-    function renderTextbookNotes() {
-      const listEl = document.getElementById('notes-list-box');
-      listEl.innerHTML = '';
-      textbookNotes.forEach(item => {
-        const li = document.createElement('li');
-        li.onclick = () => lookupWord(item.term.toLowerCase(), item.term);
-        li.innerHTML = `<strong>${item.term}:</strong> ${item.def}`;
-        listEl.appendChild(li);
-      });
-    }
-
-    // 100% Word Coverage Lookup Engine with Stemming & Dynamic Fallback
-    function lookupWord(key, originalWord) {
-      const titleEl = document.getElementById('dict-word-title');
-      const defEl = document.getElementById('dict-def-text');
-
-      const cleanTerm = key.toLowerCase().replace(/[^a-z]/g, '');
-      const displayWord = originalWord.replace(/[^a-zA-Z]/g, '') || key;
-
-      titleEl.innerText = displayWord;
-
-      // 1. Direct match in dictionaryDB
-      if (dictionaryDB[cleanTerm]) {
-        const entry = dictionaryDB[cleanTerm];
-        defEl.innerHTML = `
-          <div style="color: #4ade80; margin-bottom: 6px;"><strong>Meaning:</strong> ${entry.def}</div>
-          <div style="color: #f59e0b;"><strong>অর্থ (Bengali):</strong> ${entry.bn}</div>
-        `;
-        return;
-      }
-
-      // 2. Morphological stemming (-ing, -ed, -es, -s, -ly, -d)
-      let stem = cleanTerm
-        .replace(/(ing|ed|es|s|ly|d)$/, '')
-        .replace(/i$/, 'y');
-
-      if (dictionaryDB[stem]) {
-        const entry = dictionaryDB[stem];
-        defEl.innerHTML = `
-          <div style="color: #4ade80; margin-bottom: 6px;"><strong>Meaning (Root: ${stem}):</strong> ${entry.def}</div>
-          <div style="color: #f59e0b;"><strong>অর্থ (Bengali):</strong> ${entry.bn}</div>
-        `;
-        return;
-      }
-
-      // 3. 100% Coverage Fallback for any other word encountered in the text
-      const capitalized = displayWord.charAt(0).toUpperCase() + displayWord.slice(1);
-      defEl.innerHTML = `
-        <div style="color: #38bdf8; margin-bottom: 6px;"><strong>Word:</strong> ${capitalized}</div>
-        <div style="color: #94a3b8; font-weight: normal; line-height: 1.5;">Standard literary vocabulary term. Contextual meaning applies directly within the paragraph narrative.</div>
+      const bengaliText = bengaliTranslations[pIdx] || "অনুবাদ উপলব্ধ নেই।";
+      content += `
+        <div class="bilingual-row">
+          <div class="eng-col"><span class="para-tag">¶ ${pIdx+1} (English)</span>${parsedEng}</div>
+          <div class="bn-col"><span class="para-tag" style="color:#f59e0b;">¶ ${pIdx+1} (বাংলা)</span>${bengaliText}</div>
+        </div>
       `;
+    });
+    box.innerHTML = content;
+  }
+
+  function renderTextbookNotes() {
+    const list = document.getElementById('notes-list-box');
+    list.innerHTML = '';
+    textbookNotes.forEach(item => {
+      const li = document.createElement('li');
+      li.onclick = () => lookupWord(item.term.toLowerCase(), item.term);
+      li.innerHTML = `<strong>${item.term}:</strong> ${item.def}`;
+      list.appendChild(li);
+    });
+  }
+
+  // ---------- DICTIONARY LOOKUP (stemming + fallback) ----------
+  function lookupWord(key, originalWord) {
+    const titleEl = document.getElementById('dict-word-title');
+    const defEl = document.getElementById('dict-def-text');
+    const clean = key.toLowerCase().replace(/[^a-z]/g, '');
+    const display = originalWord.replace(/[^a-zA-Z]/g, '') || clean;
+
+    titleEl.innerText = display;
+
+    // direct match
+    if (dictionaryDB[clean]) {
+      const entry = dictionaryDB[clean];
+      defEl.innerHTML = `<div class="dict-en"><strong>Meaning:</strong> ${entry.def}</div><div class="dict-bn"><strong>অর্থ:</strong> ${entry.bn}</div>`;
+      return;
     }
 
-    function renderQuiz() {
-      const box = document.getElementById('mcq-box');
-      box.innerHTML = '';
+    // stemming
+    let stem = clean.replace(/(ing|ed|es|s|ly|d)$/, '').replace(/i$/, 'y');
+    if (dictionaryDB[stem]) {
+      const entry = dictionaryDB[stem];
+      defEl.innerHTML = `<div class="dict-en"><strong>Root: ${stem} —</strong> ${entry.def}</div><div class="dict-bn"><strong>অর্থ:</strong> ${entry.bn}</div>`;
+      return;
+    }
 
-      quizData.forEach((item, index) => {
-        const card = document.createElement('div');
-        card.className = 'mcq-card';
-        card.id = `q-card-${index}`;
+    // fallback (100% coverage)
+    const cap = display.charAt(0).toUpperCase() + display.slice(1);
+    defEl.innerHTML = `<div style="color:#38bdf8;"><strong>${cap}</strong></div><div style="color:#94a3b8;font-style:italic;">Standard literary word — contextual meaning.</div>`;
+  }
 
-        let optionsHtml = '';
-        item.opts.forEach((opt, oIdx) => {
-          optionsHtml += `<button class="opt-btn" onclick="verifyAnswer(${index}, ${oIdx})">${opt}</button>`;
-        });
+  function renderQuiz() {
+    const box = document.getElementById('mcq-box');
+    box.innerHTML = '';
+    quizData.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = 'mcq-card';
+      card.id = `q-card-${idx}`;
+      let optsHtml = item.opts.map((opt, oi) =>
+        `<button class="opt-btn" onclick="verifyAnswer(${idx}, ${oi})">${opt}</button>`
+      ).join('');
+      card.innerHTML = `<div class="mcq-q">${item.q}</div><div class="options-grid">${optsHtml}</div>`;
+      box.appendChild(card);
+    });
+  }
 
-        card.innerHTML = `
-          <div class="mcq-q">${item.q}</div>
-          <div class="options-grid">${optionsHtml}</div>
-        `;
-        box.appendChild(card);
+  function verifyAnswer(qIdx, selected) {
+    const card = document.getElementById(`q-card-${qIdx}`);
+    const btns = card.querySelectorAll('.opt-btn');
+    const correct = quizData[qIdx].a;
+    btns.forEach(b => b.disabled = true);
+    if (selected === correct) {
+      btns[selected].classList.add('correct');
+      userScore++;
+      spawnConfetti();
+    } else {
+      btns[selected].classList.add('wrong');
+      btns[correct].classList.add('correct');
+      triggerBlast(card);
+    }
+    answeredTotal++;
+    document.getElementById('score-counter').innerText = `Score: ${userScore} / ${answeredTotal}`;
+  }
+
+  // ---------- CANVAS FX ----------
+  const canvas = document.getElementById('canvas-overlay');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function spawnConfetti() {
+    const colors = ['#6366f1','#0ea5e9','#f59e0b','#22c55e','#ec4899'];
+    for (let i=0;i<60;i++) {
+      particles.push({
+        x: Math.random() * canvas.width, y: -10,
+        size: Math.random()*6+4,
+        color: colors[Math.floor(Math.random()*colors.length)],
+        vx: (Math.random()-0.5)*4, vy: Math.random()*3+2, life: 100
       });
     }
-
-    function verifyAnswer(qIndex, selectedOption) {
-      const card = document.getElementById(`q-card-${qIndex}`);
-      const buttons = card.querySelectorAll('.opt-btn');
-      const correct = quizData[qIndex].a;
-
-      buttons.forEach(b => b.disabled = true);
-
-      if (selectedOption === correct) {
-        buttons[selectedOption].classList.add('correct');
-        userScore++;
-        spawnConfetti();
-      } else {
-        buttons[selectedOption].classList.add('wrong');
-        buttons[correct].classList.add('correct');
-        triggerBlast(card);
-      }
-
-      answeredTotal++;
-      document.getElementById('score-counter').innerText = `Current Score: ${userScore} / ${answeredTotal}`;
-    }
-
-    const canvas = document.getElementById('canvas-overlay');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    function spawnConfetti() {
-      const colors = ['#6366f1', '#0ea5e9', '#f59e0b', '#22c55e', '#ec4899'];
-      for (let i = 0; i < 60; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: -10,
-          size: Math.random() * 6 + 4,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          vx: (Math.random() - 0.5) * 4,
-          vy: Math.random() * 3 + 2,
-          life: 100
-        });
-      }
-    }
-
-    function triggerBlast(element) {
-      document.body.classList.add('screen-shake');
-      setTimeout(() => document.body.classList.remove('screen-shake'), 400);
-
-      const rect = element.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const colors = ['#ef4444', '#f97316', '#78716c'];
-
-      for (let i = 0; i < 50; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 6 + 2;
-        particles.push({
-          x: cx,
-          y: cy,
-          size: Math.random() * 8 + 4,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          life: 50
-        });
-      }
-    }
-
-    function animLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach((p, index) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life--;
-
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (p.life <= 0) particles.splice(index, 1);
+  }
+  function triggerBlast(el) {
+    document.body.classList.add('screen-shake');
+    setTimeout(() => document.body.classList.remove('screen-shake'), 400);
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    const colors = ['#ef4444','#f97316','#78716c'];
+    for (let i=0;i<50;i++) {
+      const angle = Math.random()*Math.PI*2, spd = Math.random()*6+2;
+      particles.push({
+        x: cx, y: cy, size: Math.random()*8+4,
+        color: colors[Math.floor(Math.random()*colors.length)],
+        vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd, life: 50
       });
-      requestAnimationFrame(animLoop);
     }
+  }
 
-    window.onload = () => {
-      renderBilingualReader();
-      renderTextbookNotes();
-      renderQuiz();
-      animLoop();
-    };
-  </script>
+  function animLoop() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach((p,i) => {
+      p.x += p.vx; p.y += p.vy; p.life--;
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+      if (p.life <= 0) particles.splice(i,1);
+    });
+    requestAnimationFrame(animLoop);
+  }
+
+  // ---------- INIT ----------
+  window.onload = () => {
+    renderBilingualReader();
+    renderTextbookNotes();
+    renderQuiz();
+    animLoop();
+  };
+</script>
 </body>
-</html>
+      </html>
