@@ -13,6 +13,8 @@
       --accent: #6366f1;
       --accent-hover: #4f46e5;
       --border: #334155;
+      --popup-bg: #1e293b;
+      --popup-border: #4f46e5;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -123,6 +125,7 @@
       padding: 0 1px;
       border-radius: 3px;
       transition: background 0.15s, color 0.15s;
+      position: relative;
     }
     .word:hover {
       background: rgba(99, 102, 241, 0.4);
@@ -202,6 +205,67 @@
     }
     #score-counter { font-size: 1.1rem; font-weight: bold; color: #4ade80; }
 
+    /* POPUP STYLES */
+    .word-popup {
+      position: fixed;
+      background: var(--popup-bg);
+      border: 2px solid var(--popup-border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+      z-index: 1000;
+      color: var(--text-main);
+      animation: popFade 0.25s ease-out;
+      pointer-events: none;
+      backdrop-filter: blur(6px);
+    }
+    .word-popup .popup-word {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.5px;
+    }
+    .word-popup .popup-pronounce {
+      font-size: 1rem;
+      color: #a5b4fc;
+      margin-bottom: 0.5rem;
+      font-weight: 400;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 0.3rem;
+    }
+    .word-popup .popup-meaning {
+      font-size: 1.05rem;
+      color: #e2e8f0;
+      margin-bottom: 0.3rem;
+    }
+    .word-popup .popup-bn {
+      font-size: 1.05rem;
+      color: #facc15;
+      font-weight: 500;
+    }
+    .word-popup .popup-close {
+      position: absolute;
+      top: 8px;
+      right: 14px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: 0.2s;
+      pointer-events: auto;
+      background: transparent;
+      border: none;
+      line-height: 1;
+    }
+    .word-popup .popup-close:hover { color: #f87171; transform: scale(1.2); }
+
+    @keyframes popFade {
+      0% { opacity: 0; transform: scale(0.92) translateY(-12px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
     #canvas-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -220,7 +284,6 @@
     }
     .screen-shake { animation: shake 0.4s; }
 
-    /* dictionary rich style */
     .dict-entry { padding: 0.2rem 0; }
     .dict-en { color: #e2e8f0; font-weight: 500; }
     .dict-bn { color: #facc15; }
@@ -241,7 +304,7 @@
   <div class="content-panel">
     <div id="tab-reader" class="tab-content active">
       <div class="reader-panel">
-        <h2>English & Bengali · click any word → dictionary</h2>
+        <h2>English & Bengali · click any word → popup with meaning & pronunciation</h2>
         <div id="bilingual-container"></div>
       </div>
     </div>
@@ -263,15 +326,24 @@
   </div>
 
   <div class="sticky-sidebar">
-    <h3>🔍 Live Dictionary (100% coverage)</h3>
+    <h3>🔍 Live Dictionary</h3>
     <div id="dict-word-title">tap a word</div>
-    <p style="color: var(--text-muted); font-size: 0.9rem;">English + Bengali meaning & grammatical form</p>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">English + Bengali meaning & pronunciation</p>
     <div id="dict-def-box">
       <div id="dict-def-text" style="color: #64748b; font-style: italic;">No word selected.</div>
     </div>
   </div>
 </div>
 <canvas id="canvas-overlay"></canvas>
+
+<!-- Popup container (hidden by default) -->
+<div id="word-popup" class="word-popup" style="display: none;">
+  <button class="popup-close" id="popup-close-btn">✕</button>
+  <div class="popup-word" id="popup-word">—</div>
+  <div class="popup-pronounce" id="popup-pronounce">[ pronunciation ]</div>
+  <div class="popup-meaning" id="popup-meaning">Meaning: —</div>
+  <div class="popup-bn" id="popup-bn">অর্থ: —</div>
+</div>
 
 <script>
   // ---------- FULL TEXT (19 paragraphs) ----------
@@ -304,7 +376,6 @@
     "These rash acts raised much passion of horror and amazement among the by standers. Othello had borne a fair reputation, and until he was wrought upon by the arts of a villain, he was indeed a loving and doting husband. He had loved Desdemona not wisely, but too well. When he was dead all his former merits and valiant acts were remembered. Iago was executed with strict tortures, and the state of Venice lamented for the demise of their renowned General Othello."
   ];
 
-  // Bengali translations (19 paragraphs)
   const bengaliTranslations = [
     "অনেকদিন আগে ভেনিসে ব্র্যাবানসিও নামে এক ধনী সেনেটর ছিলেন। তাঁর দেশিমোনা নামে এক সুন্দর কন্যা ছিল। বহু পাত্র তাঁর পাণিপ্রার্থী হলেও তিনি কাউকে পছন্দ করেননি। মনুষ্যের বাহ্যিক রূপের চেয়ে হৃদয়কে যিনি বেশি মূল্য দিতেন, সেই মহীয়সী নারী এমন একজনকে ভালোবেসেছিলেন—একজন মুর (শ্বেতাঙ্গ নন, শ্যামাঙ্গ nobleman), যাঁর বাবা তাঁকে অত্যন্ত ভালোবাসতেন এবং প্রায়ই তাঁদের প্রাসাদে আমন্ত্রণ জানাতেন। বীর মুর ওথেলো এক সাহসী সৈনিক ছিলেন এবং তুর্কিদের বিরুদ্ধে রক্তক্ষয়ী যুদ্ধে তাঁর বীরত্বের জন্য তাঁকে জেনারেল পদে উন্নীত করা হয়েছিল এবং সমগ্র রাজ্যে তিনি অত্যন্ত সম্মানিত ও পূজিত ছিলেন।",
     "ওথেলো একজন মহান ভ্রমণকারী ছিলেন এবং দেশিমোনা যুদ্ধ, অবরোধ, অভিযান, তাঁর জীবনের চরম বিপদসমূহ, দুর্গ ভেদ করার সময় মৃত্যুর মুখ থেকে ফিরে আসা কিংবা কামানের মুখের সামনে দাঁড়ানোর রোমাঞ্চকর ঘটনা এবং কীভাবে তিনি উদ্ধত শত্রুর হাতে বন্দী হয়ে দাস হিসেবে বিক্রী হয়েছিলেন ও পরে পালিয়েছিলেন—সেই সমস্ত অভিজ্ঞতার গল্প শুনতে দারুণ আগ্রহী ছিলেন।",
@@ -332,415 +403,406 @@
     "ভুল বুঝতে পেরে ভেনিসবাসী ওথেলোর অকাল মৃত্যুতে শোক প্রকাশ করল এবং নিষ্ঠুর ও কঠোর নির্যাতনের মাধ্যমে কুচক্রী ইয়াগোর মৃত্যুদণ্ড কার্যকর করা হলো।"
   ];
 
-  // ---------- DICTIONARY (≥50% coverage of unique words) ----------
+  // ---------- DICTIONARY (with pronunciation hints) ----------
   const dictionaryDB = {
-    // common & key words – over 150 entries to cover 50%+ of unique tokens
-    "long": { def: "extending a great distance", bn: "দীর্ঘ" },
-    "ago": { def: "before the present; earlier", bn: "পূর্বে" },
-    "venice": { def: "a city in northeastern Italy", bn: "ভেনিস" },
-    "rich": { def: "Having a great deal of money", bn: "ধনী" },
-    "senator": { def: "member of a senate", bn: "সেনেটর" },
-    "brabantio": { def: "a senator, Desdemona's father", bn: "ব্র্যাবানসিও" },
-    "beautiful": { def: "pleasing to the eye", bn: "সুন্দর" },
-    "daughter": { def: "female child", bn: "কন্যা" },
-    "gentle": { def: "mild, kind", bn: "কোমল" },
-    "desdemona": { def: "heroine of Othello", bn: "দেশিমোনা" },
-    "sought": { def: "tried to find (past of seek)", bn: "খোঁজা হয়েছিল" },
-    "suitors": { def: "men seeking marriage", bn: "বিবাহের পাত্র" },
-    "clime": { def: "region, climate", bn: "অঞ্চল" },
-    "complexion": { def: "skin tone, appearance", bn: "গায়ের রং" },
-    "noble": { def: "aristocratic, high-born", bn: "মহৎ" },
-    "lady": { def: "woman of high rank", bn: "মহীয়সী" },
-    "heart": { def: "center of emotions", bn: "হৃদয়" },
-    "appearance": { def: "the way something looks", bn: "বাহ্যিক রূপ" },
-    "moor": { def: "a dark-skinned Muslim or person of North African descent", bn: "মুর" },
-    "valiant": { def: "brave, heroic", bn: "বীর" },
-    "soldier": { def: "a person who serves in an army", bn: "সৈনিক" },
-    "heroics": { def: "brave actions", bn: "বীরত্বপূর্ণ কাজ" },
-    "bloody": { def: "involving bloodshed", bn: "রক্তাক্ত" },
-    "turks": { def: "people of Turkey", bn: "তুর্কি" },
-    "general": { def: "high military rank", bn: "জেনারেল" },
-    "esteemed": { def: "respected highly", bn: "সম্মানিত" },
-    "revered": { def: "deeply respected", bn: "পূজিত" },
-    "traveller": { def: "one who travels", bn: "ভ্রমণকারী" },
-    "keen": { def: "eager, enthusiastic", bn: "আগ্রহী" },
-    "stories": { def: "narratives", bn: "গল্প" },
-    "adventure": { def: "exciting experience", bn: "অভিযান" },
-    "recollected": { def: "remembered", bn: "স্মরণ করা" },
-    "experiences": { def: "events lived through", bn: "অভিজ্ঞতা" },
-    "battles": { def: "fights between armies", bn: "যুদ্ধ" },
-    "sieges": { def: "military blockades", bn: "অবরোধ" },
-    "encounters": { def: "meetings, often confrontational", bn: "মুখোমুখি" },
-    "perils": { def: "dangers", bn: "বিপদ" },
-    "breach": { def: "gap in a wall", bn: "ভাঙন" },
-    "cannon": { def: "large gun", bn: "কামান" },
-    "captivated": { def: "charmed, fascinated", bn: "মোহিত" },
-    "insolent": { def: "rude, arrogant", bn: "উদ্ধত" },
-    "slave": { def: "a person owned by another", bn: "দাস" },
-    "demeaned": { def: "lowered in dignity", bn: "হেয় করা" },
-    "escaped": { def: "got free", bn: "পলায়ন" },
-    "rapt": { def: "completely absorbed", bn: "একধ্যানে" },
-    "attention": { def: "notice, concentration", bn: "মনোযোগ" },
-    "accounts": { def: "reports, narratives", bn: "বিবরণ" },
-    "narration": { def: "act of telling a story", bn: "বর্ণনা" },
-    "strange": { def: "unusual, odd", bn: "অদ্ভুত" },
-    "foreign": { def: "from another country", bn: "বিদেশি" },
-    "countries": { def: "nations", bn: "দেশ" },
-    "wilderness": { def: "uncultivated land", bn: "অরণ্য" },
-    "romantic": { def: "pleasingly picturesque", bn: "মনোরম" },
-    "caverns": { def: "large caves", bn: "গুহা" },
-    "quarries": { def: "places where stone is mined", bn: "পাথর খনি" },
-    "rocks": { def: "stones", bn: "পাথর" },
-    "lofty": { def: "very high", bn: "উঁচু" },
-    "mountains": { def: "large natural elevations", bn: "পাহাড়" },
-    "clouds": { def: "visible masses of water vapor", bn: "মেঘ" },
-    "savage": { def: "fierce, uncivilized", bn: "বর্বর" },
-    "nations": { def: "large groups of people", bn: "জাতি" },
-    "cannibals": { def: "people who eat human flesh", bn: "নরখাদক" },
-    "man-eaters": { def: "cannibals", bn: "মানুষখেকো" },
-    "race": { def: "group of people with common ancestry", bn: "জাতি" },
-    "africa": { def: "continent", bn: "আফ্রিকা" },
-    "shoulders": { def: "upper part of the body", bn: "কাঁধ" },
-    "enticed": { def: "attracted, tempted", bn: "প্রলুব্ধ" },
-    "household": { def: "related to home or family", bn: "গৃহস্থালি" },
-    "affairs": { def: "matters, business", bn: "কাজ" },
-    "haste": { def: "speed, quickness", bn: "দ্রুতি" },
-    "greedy": { def: "having a strong desire", bn: "লোভী" },
-    "devour": { def: "read or listen eagerly", bn: "গ্রাস করা" },
-    "discourse": { def: "long speech", bn: "বক্তব্য" },
-    "sigh": { def: "long deep breath", bn: "দীর্ঘশ্বাস" },
-    "modesty": { def: "humbleness", bn: "বিনয়" },
-    "blushes": { def: "reddening of the face", bn: "লজ্জা" },
-    "consent": { def: "agreement", bn: "সম্মতি" },
-    "generous": { def: "giving freely", bn: "উদার" },
-    "gorgeous": { def: "very beautiful", bn: "চমৎকার" },
-    "marriage": { def: "wedding", bn: "বিয়ে" },
-    "privately": { def: "in secret", bn: "গোপনে" },
-    "solemnized": { def: "formally celebrated", bn: "আনুষ্ঠানিক" },
-    "secret": { def: "hidden, concealed", bn: "গোপন" },
-    "appealed": { def: "made a request", bn: "আবেদন" },
-    "duke": { def: "ruler of a duchy", bn: "ডিউক" },
-    "justice": { def: "fairness", bn: "ন্যায়" },
-    "accusing": { def: "charging with fault", bn: "অভিযোগ" },
-    "spell": { def: "magic formula", bn: "জাদু" },
-    "witchcraft": { def: "use of magic", bn: "জাদুটোনা" },
-    "seduce": { def: "persuade to do wrong", bn: "প্রলুব্ধ করা" },
-    "state": { def: "nation, condition", bn: "রাষ্ট্র" },
-    "urgent": { def: "requiring immediate action", bn: "জরুরি" },
-    "senate": { def: "governing council", bn: "সেনেট" },
-    "fleet": { def: "group of ships", bn: "নৌবহর" },
-    "mighty": { def: "powerful", bn: "শক্তিশালী" },
-    "preparation": { def: "readying", bn: "প্রস্তুতি" },
-    "hostility": { def: "enmity, war", bn: "শত্রুতা" },
-    "cyprus": { def: "island in the Mediterranean", bn: "সাইপ্রাস" },
-    "emergency": { def: "crisis", bn: "জরুরি অবস্থা" },
-    "competent": { def: "able, capable", bn: "দক্ষ" },
-    "invasion": { def: "attack, entry by force", bn: "আক্রমণ" },
-    "summoned": { def: "called to appear", bn: "তলব" },
-    "candidate": { def: "applicant for position", bn: "প্রার্থী" },
-    "employment": { def: "work, job", bn: "চাকরি" },
-    "culprit": { def: "person accused of crime", bn: "অভিযুক্ত" },
-    "offences": { def: "crimes, wrongs", bn: "অপরাধ" },
-    "utmost": { def: "greatest", bn: "সর্বোচ্চ" },
-    "patience": { def: "ability to wait", bn: "ধৈর্য" },
-    "assembly": { def: "group of people gathered", bn: "সভা" },
-    "infuriated": { def: "furious, angry", bn: "ক্ষিপ্ত" },
-    "outrageous": { def: "shocking, offensive", bn: "আপত্তিকর" },
-    "defence": { def: "justification", bn: "আত্মপক্ষ" },
-    "narrate": { def: "tell a story", bn: "বর্ণনা" },
-    "artless": { def: "simple, natural", bn: "সহজ-সরল" },
-    "eloquence": { def: "fluent speaking", bn: "বাকপটুতা" },
-    "confess": { def: "admit", bn: "স্বীকার করা" },
-    "courtship": { def: "wooing period", bn: "প্রেমালাপ" },
-    "plainly": { def: "clearly", bn: "স্পষ্টভাবে" },
-    "honest": { def: "truthful", bn: "সৎ" },
-    "arts": { def: "skills", bn: "কৌশল" },
-    "wooing": { def: "courting", bn: "প্রণয় নিবেদন" },
-    "statement": { def: "declaration", bn: "বক্তব্য" },
-    "confirmed": { def: "validated", bn: "নিশ্চিত" },
-    "acknowledged": { def: "admitted", bn: "স্বীকার" },
-    "bound": { def: "obligated", bn: "বাধ্য" },
-    "duty": { def: "responsibility", bn: "কর্তব্য" },
-    "education": { def: "training, learning", bn: "শিক্ষা" },
-    "higher": { def: "greater", bn: "উচ্চতর" },
-    "perform": { def: "carry out", bn: "পালন করা" },
-    "lover": { def: "romantic partner", bn: "প্রেমিক" },
-    "husband": { def: "married man", bn: "স্বামী" },
-    "preferring": { def: "liking better", bn: "পছন্দ করা" },
-    "maintain": { def: "keep up", bn: "বজায় রাখা" },
-    "plea": { def: "request", bn: "আবেদন" },
-    "tyrant": { def: "cruel ruler", bn: "অত্যাচারী" },
-    "clogs": { def: "hindrances", bn: "বাধা" },
-    "desertion": { def: "abandonment", bn: "ত্যাগ" },
-    "deceived": { def: "misled", bn: "প্রতারিত" },
-    "trial": { def: "court hearing", bn: "বিচার" },
-    "readily": { def: "willingly, easily", bn: "উৎসাহের সাথে" },
-    "refused": { def: "denied", bn: "অস্বীকার" },
-    "boldly": { def: "confidently", bn: "সাহসের সাথে" },
-    "newly": { def: "recently", bn: "নতুন করে" },
-    "couple": { def: "two people together", bn: "দম্পতি" },
-    "set sail": { def: "departed by ship", bn: "যাত্রা করা" },
-    "landed": { def: "came to shore", bn: "অবতরণ" },
-    "violent": { def: "forceful", bn: "প্রচণ্ড" },
-    "tempest": { def: "violent storm", bn: "ঝড়" },
-    "dispersed": { def: "scattered", bn: "ছত্রভঙ্গ" },
-    "secure": { def: "safe", bn: "সুরক্ষিত" },
-    "suffer": { def: "endure pain", bn: "সহ্য করা" },
-    "enemies": { def: "foes", bn: "শত্রু" },
-    "malice": { def: "ill will", bn: "বিদ্বেষ" },
-    "deadly": { def: "fatal, lethal", bn: "মারাত্মক" },
-    "strangers": { def: "unknown persons", bn: "অপরিচিত" },
-    "infidels": { def: "unbelievers", bn: "কাফের" },
-    "friends": { def: "companions", bn: "বন্ধু" },
-    "possessed": { def: "owned, had", bn: "অধিকারী" },
-    "confidence": { def: "trust", bn: "বিশ্বাস" },
-    "cassio": { def: "Othello's lieutenant", bn: "ক্যাসিও" },
-    "florentine": { def: "from Florence", bn: "ফ্লরেন্সীয়" },
-    "amorous": { def: "romantic", bn: "প্রণয়াসক্ত" },
-    "pleasing": { def: "satisfying", bn: "আনন্দদায়ক" },
-    "handsome": { def: "good-looking", bn: "সুদর্শন" },
-    "eloquent": { def: "well-spoken", bn: "বক্তা" },
-    "jealousy": { def: "envy, suspicion", bn: "ঈর্ষা" },
-    "depute": { def: "assign as a deputy", bn: "প্রতিনিধি নিযুক্ত করা" },
-    "innocent": { def: "not guilty", bn: "নির্দোষ" },
-    "simplicity": { def: "plainness", bn: "সরলতা" },
-    "honour": { def: "respect, pride", bn: "সম্মান" },
-    "blemish": { def: "flaw", bn: "কলঙ্ক" },
-    "character": { def: "personality", bn: "চরিত্র" },
-    "trusted": { def: "relied on", bn: "বিশ্বস্ত" },
-    "frequented": { def: "visited often", bn: "প্রায়ই যেত" },
-    "rattling": { def: "lively, fast", bn: "চটুল" },
-    "serious": { def: "grave, thoughtful", bn: "গম্ভীর" },
-    "temper": { def: "mood, disposition", bn: "মেজাজ" },
-    "promoted": { def: "advanced in rank", bn: "পদোন্নতি" },
-    "lieutenant": { def: "military officer rank", bn: "লেফট্যানেন্ট" },
-    "promotion": { def: "advancement", bn: "উন্নতি" },
-    "offence": { def: "annoyance, crime", bn: "অপরাধ" },
-    "iago": { def: "the villain of the play", bn: "ইয়াগো" },
-    "elder": { def: "older", bn: "প্রবীণ" },
-    "claim": { def: "assertion of right", bn: "দাবি" },
-    "scorn": { def: "contempt, mockery", bn: "অবজ্ঞা" },
-    "befitting": { def: "suitable for", bn: "উপযুক্ত" },
-    "warfare": { def: "armed conflict", bn: "যুদ্ধবিদ্যা" },
-    "hated": { def: "disliked intensely", bn: "ঘৃণা করা" },
-    "favouring": { def: "preferring", bn: "পক্ষপাত" },
-    "unjust": { def: "unfair", bn: "অন্যায্য" },
-    "suspicion": { def: "mistrust", bn: "সন্দেহ" },
-    "emilia": { def: "Iago's wife", bn: "এমিলিয়া" },
-    "imaginary": { def: "not real", bn: "কাল্পনিক" },
-    "provocations": { def: "incitements", bn: "প্ররোচনা" },
-    "scheme": { def: "plan", bn: "পরিকল্পনা" },
-    "revenge": { def: "retaliation", bn: "প্রতিশোধ" },
-    "ruin": { def: "destruction", bn: "ধ্বংস" },
-    "crafty": { def: "cunning, sly", bn: "চতুর" },
-    "studied": { def: "examined", bn: "অধ্যয়ন" },
-    "human": { def: "of people", bn: "মানুষ" },
-    "mind": { def: "intellect", bn: "মন" },
-    "afflictions": { def: "sufferings", bn: "দুঃখ-কষ্ট" },
-    "torment": { def: "torture", bn: "যন্ত্রণা" },
-    "unbearable": { def: "intolerable", bn: "অসহ্য" },
-    "sorest": { def: "most severe", bn: "সবচেয়ে তীব্র" },
-    "sting": { def: "sharp pain", bn: "দংশন" },
-    "envious": { def: "jealous", bn: "ঈর্ষান্বিত" },
-    "excellent": { def: "very good", bn: "চমৎকার" },
-    "plot": { def: "conspiracy", bn: "চক্রান্ত" },
-    "culminate": { def: "climax", bn: "সমাপ্তি" },
-    "death": { def: "end of life", bn: "মৃত্যু" },
-    "arrival": { def: "coming", bn: "আগমন" },
-    "holiday": { def: "festive day", bn: "উৎসব" },
-    "mood": { def: "state of mind", bn: "মেজাজ" },
-    "island": { def: "land surrounded by water", bn: "দ্বীপ" },
-    "feasting": { def: "eating lavishly", bn: "ভোজ" },
-    "merry": { def: "cheerful", bn: "প্রফুল্ল" },
-    "guard": { def: "sentry", bn: "প্রহরী" },
-    "charge": { def: "responsibility", bn: "দায়িত্ব" },
-    "restrain": { def: "hold back", bn: "সংযত করা" },
-    "excessively": { def: "too much", bn: "অতিরিক্ত" },
-    "guise": { def: "pretence", bn: "ছল" },
-    "loyalty": { def: "faithfulness", bn: "আনুগত্য" },
-    "lured": { def: "enticed", bn: "প্রলুব্ধ" },
-    "drink": { def: "beverage", bn: "পানীয়" },
-    "fault": { def: "mistake, error", bn: "অপরাধ" },
-    "resisted": { def: "opposed", bn: "প্রতিরোধ" },
-    "initially": { def: "at first", bn: "প্রথমে" },
-    "guile": { def: "cunning, trickery", bn: "চাতুরী" },
-    "swallowed": { def: "took in", bn: "গিলে ফেলা" },
-    "drunk": { def: "intoxicated", bn: "মাতাল" },
-    "provoked": { def: "stimulated, incited", bn: "উসকানি" },
-    "praised": { def: "complimented", bn: "প্রশংসা" },
-    "exquisite": { def: "excellent, fine", bn: "চমৎকার" },
-    "scuffle": { def: "brief fight", bn: "হাতাহাতি" },
-    "montano": { def: "officer in Cyprus", bn: "মন্তানো" },
-    "worthy": { def: "deserving", bn: "যোগ্য" },
-    "interfered": { def: "intruded", bn: "হস্তক্ষেপ" },
-    "pacify": { def: "calm, quiet", bn: "শান্ত করা" },
-    "wounded": { def: "injured", bn: "আহত" },
-    "alarm": { def: "warning signal", bn: "অ্যালার্ম" },
-    "mutiny": { def: "rebellion", bn: "বিদ্রোহ" },
-    "awakened": { def: "woke up", bn: "জাগ্রত" },
-    "rationality": { def: "reasoning", bn: "যৌক্তিকতা" },
-    "ashamed": { def: "embarrassed", bn: "লজ্জিত" },
-    "reluctant": { def: "unwilling", bn: "অনিচ্ছুক" },
-    "compelled": { def: "forced", bn: "বাধ্য" },
-    "strict": { def: "severe, precise", bn: "কঠোর" },
-    "observer": { def: "one who watches", bn: "পর্যবেক্ষক" },
-    "discipline": { def: "regulation, order", bn: "শৃঙ্খলা" },
-    "artifice": { def: "trickery", bn: "কৌশল" },
-    "undermined": { def: "weakened", bn: "ক্ষুণ্ণ" },
-    "adversary": { def: "opponent", bn: "শত্রু" },
-    "misfortune": { def: "bad luck", bn: "দুর্ভাগ্য" },
-    "sobered": { def: "became serious", bn: "সংযত" },
-    "lamented": { def: "mourned", bn: "বিলাপ" },
-    "reputation": { def: "public opinion", bn: "খ্যাতি" },
-    "immortal": { def: "everlasting", bn: "অমর" },
-    "bestial": { def: "brutal, animal-like", bn: "পশুতুল্য" },
-    "despised": { def: "hated, scorned", bn: "ঘৃণা" },
-    "mediate": { def: "intervene", bn: "মধ্যস্থতা" },
-    "solicitor": { def: "advocate", bn: "সুপারিশকারী" },
-    "mortally": { def: "fatally", bn: "মারাত্মকভাবে" },
-    "offended": { def: "hurt feelings", bn: "অপমানিত" },
-    "pardon": { def: "forgiveness", bn: "ক্ষমা" },
-    "offender": { def: "wrongdoer", bn: "অপরাধী" },
-    "penitent": { def: "regretful", bn: "অনুশোচনা" },
-    "humbled": { def: "made humble", bn: "বিনয়ী" },
-    "magnitude": { def: "size, importance", bn: "মাত্রা" },
-    "dispraise": { def: "criticism", bn: "অপ্রশংসা" },
-    "pleader": { def: "one who pleads", bn: "আবেদনকারী" },
-    "imploring": { def: "begging", bn: "অনুনয়" },
-    "intercession": { def: "mediation", bn: "সুপারিশ" },
-    "departed": { def: "left", bn: "প্রস্থান" },
-    "opposite": { def: "other side", bn: "বিপরীত" },
-    "interaction": { def: "communication", bn: "আলাপচারিতা" },
-    "satisfaction": { def: "fulfillment", bn: "সন্তোষ" },
-    "affirmative": { def: "positive", bn: "হ্যাঁসূচক" },
-    "courtship": { def: "wooing", bn: "প্রণয়" },
-    "brow": { def: "forehead", bn: "ভ্রু" },
-    "terrible": { def: "awful, dreadful", bn: "ভয়াবহ" },
-    "curiosity": { def: "strong desire to know", bn: "কৌতূহল" },
-    "distraction": { def: "disturbance", bn: "অস্বস্তি" },
-    "cautious": { def: "careful", bn: "সতর্ক" },
-    "virtue": { def: "good quality", bn: "গুণ" },
-    "virtuous": { def: "having virtue", bn: "সৎ" },
-    "proof": { def: "evidence", bn: "প্রমাণ" },
-    "dishonest": { def: "untruthful", bn: "অসৎ" },
-    "behaviour": { def: "conduct", bn: "আচরণ" },
-    "dispositions": { def: "temperaments", bn: "স্বভাব" },
-    "pranks": { def: "mischievous acts", bn: "কৌতুক" },
-    "dared": { def: "ventured, had courage", bn: "সাহস" },
-    "insinuated": { def: "implied", bn: "ইঙ্গিত" },
-    "argument": { def: "reason, point", bn: "যুক্তি" },
-    "apology": { def: "expression of regret", bn: "ক্ষমা চাওয়া" },
-    "rejected": { def: "refused", bn: "প্রত্যাখ্যান" },
-    "suitable": { def: "appropriate", bn: "উপযুক্ত" },
-    "matches": { def: "suitable partners", bn: "পাত্র" },
-    "unnatural": { def: "abnormal", bn: "অস্বাভাবিক" },
-    "probable": { def: "likely", bn: "সম্ভাব্য" },
-    "reconcilement": { def: "reconciliation", bn: "মিলন" },
-    "earnestness": { def: "sincerity", bn: "আন্তরিকতা" },
-    "solicit": { def: "ask for, plead", bn: "আবেদন" },
-    "treacherous": { def: "betraying", bn: "বিশ্বাসঘাতক" },
-    "villain": { def: "evil person", bn: "খলনায়ক" },
-    "destruction": { def: "ruin", bn: "ধ্বংস" },
-    "net": { def: "trap", bn: "জাল" },
-    "entreat": { def: "beg", bn: "অনুরোধ" },
-    "mediation": { def: "intervention", bn: "মধ্যস্থতা" },
-    "stratagems": { def: "plans, tricks", bn: "কৌশল" },
-    "restlessness": { def: "unease", bn: "অস্থিরতা" },
-    "poppy": { def: "flower producing opium", bn: "পোস্ত" },
-    "mandragora": { def: "hallucinogenic plant", bn: "মান্দ্রাগোরা" },
-    "potions": { def: "medicinal drinks", bn: "ঔষধ" },
-    "occupation": { def: "job, activity", bn: "পেশা" },
-    "delight": { def: "great pleasure", bn: "আনন্দ" },
-    "roused": { def: "awakened", bn: "জাগ্রত" },
-    "troops": { def: "soldiers", bn: "সৈন্য" },
-    "neighing": { def: "horse sound", bn: "হ্রেষা" },
-    "ambition": { def: "desire for success", bn: "উচ্চাকাঙ্ক্ষা" },
-    "contrary": { def: "opposite", bn: "বিপরীত" },
-    "throat": { def: "front of neck", bn: "গলা" },
-    "demanded": { def: "asked forcefully", bn: "দাবি" },
-    "guilt": { def: "responsibility for wrong", bn: "অপরাধবোধ" },
-    "instant": { def: "immediate", bn: "তাৎক্ষণিক" },
-    "belied": { def: "contradicted, misrepresented", bn: "মিথ্যা প্রমাণ" },
-    "feigned": { def: "pretended", bn: "ভান" },
-    "indignation": { def: "anger at injustice", bn: "ক্ষোভ" },
-    "misinterpreted": { def: "understood wrongly", bn: "ভুল ব্যাখ্যা" },
-    "vice": { def: "evil practice", bn: "অসৎ অভ্যাস" },
-    "handkerchief": { def: "cloth for wiping", bn: "রুমাল" },
-    "strawberries": { def: "red fruit", bn: "স্ট্রবেরি" },
-    "acknowledged": { def: "admitted", bn: "স্বীকার" },
-    "fidelity": { def: "loyalty", bn: "বিশ্বস্ততা" },
-    "devise": { def: "plan, invent", bn: "পরিকল্পনা করা" },
-    "swift": { def: "fast", bn: "দ্রুত" },
-    "enquire": { def: "ask", bn: "জিজ্ঞাসা" },
-    "sentence": { def: "punishment", bn: "শাস্তি" },
-    "constant": { def: "faithful, unchanging", bn: "অবিচল" },
-    "wronged": { def: "treated unjustly", bn: "অন্যায়" },
-    "naughty": { def: "misbehaving", bn: "দুষ্টু" },
-    "shrewd": { def: "clever, astute", bn: "চতুর" },
-    "pretence": { def: "pretending", bn: "ছল" },
-    "handle": { def: "opportunity", bn: "সুযোগ" },
-    "headache": { def: "pain in head", bn: "মাথাব্যথা" },
-    "temples": { def: "sides of forehead", bn: "কপালের পাশ" },
-    "fault": { def: "mistake", bn: "অপরাধ" },
-    "amiable": { def: "friendly", bn: "স্নেহময়ী" },
-    "subdue": { def: "conquer", bn: "বশীভূত" },
-    "loathe": { def: "hate", bn: "ঘৃণা" },
-    "magical": { def: "produced by magic", bn: "জাদুকরী" },
-    "divert": { def: "distract, amuse", bn: "অন্য দিকে ঘুরানো" },
-    "suspect": { def: "believe (of crime)", bn: "সন্দেহ" },
-    "unfaithful": { def: "disloyal", bn: "অবিশ্বস্ত" },
-    "wept": { def: "cried", bn: "কাঁদলেন" },
-    "fortitude": { def: "courage", bn: "সহ্যশক্তি" },
-    "poverty": { def: "poorness", bn: "দারিদ্র্য" },
-    "disease": { def: "illness", bn: "রোগ" },
-    "disgrace": { def: "shame", bn: "অপমান" },
-    "infidelity": { def: "unfaithfulness", bn: "অবিশ্বস্ততা" },
-    "weed": { def: "unwanted plant", bn: "আগাছা" },
-    "smelled": { def: "had an odor", bn: "গন্ধ" },
-    "ached": { def: "hurt", bn: "যন্ত্রণা" },
-    "stupefied": { def: "dazed, stunned", bn: "হতবাক" },
-    "wonder": { def: "amazement", bn: "বিস্ময়" },
-    "attendant": { def: "servant", bn: "পরিচারক" },
-    "wedding-sheets": { def: "bed sheets for wedding", bn: "বিবাহের চাদর" },
-    "chided": { def: "scolded", bn: "তিরস্কার" },
-    "babies": { def: "infants", bn: "শিশু" },
-    "tasks": { def: "jobs", bn: "কাজ" },
-    "meditated": { def: "planned, considered", bn: "চিন্তা" },
-    "shed": { def: "spill", bn: "রক্তপাত" },
-    "resolved": { def: "determined", bn: "সংকল্প" },
-    "betray": { def: "be disloyal", bn: "বিশ্বাসঘাতকতা" },
-    "cruel": { def: "causing pain", bn: "নিষ্ঠুর" },
-    "gnaw": { def: "chew, bite repeatedly", bn: "দংশন" },
-    "fatal": { def: "deadly", bn: "মারাত্মক" },
-    "mercy": { def: "compassion", bn: "করুণা" },
-    "guiltless": { def: "innocent", bn: "নির্দোষ" },
-    "proceeding": { def: "continuing", bn: "অগ্রসর" },
-    "stifled": { def: "suffocated", bn: "শ্বাসরোধ" },
-    "assassinate": { def: "murder (political)", bn: "হত্যা" },
-    "discovery": { def: "finding out", bn: "আবিষ্কার" },
-    "letters": { def: "written correspondence", bn: "চিঠি" },
-    "thunderstroke": { def: "stroke of lightning", bn: "বজ্রাঘাত" },
-    "murder": { def: "unlawful killing", bn: "হত্যা" },
-    "extreme": { def: "very great", bn: "চরম" },
-    "anguish": { def: "severe pain", bn: "যন্ত্রণা" },
-    "intolerable": { def: "unbearable", bn: "অসহ্য" },
-    "rash": { def: "reckless", bn: "বেপরোয়া" },
-    "passion": { def: "strong emotion", bn: "আবেগ" },
-    "horror": { def: "extreme fear", bn: "ভীতি" },
-    "amazement": { def: "great surprise", bn: "বিস্ময়" },
-    "by standers": { def: "onlookers", bn: "উপস্থিত লোক" },
-    "borne": { def: "carried, had (past)", bn: "ধারণ" },
-    "doting": { def: "very affectionate", bn: "স্নেহপরায়ণ" },
-    "wisely": { def: "in a wise manner", bn: "বুদ্ধিমত্তার সাথে" },
-    "merits": { def: "good qualities", bn: "গুণাবলী" },
-    "executed": { def: "put to death", bn: "মৃত্যুদণ্ড" },
-    "tortures": { def: "severe pain inflicted", bn: "নির্যাতন" },
-    "lamented": { def: "mourned", bn: "শোক" },
-    "demise": { def: "death", bn: "মৃত্যু" },
-    "renowned": { def: "famous, celebrated", bn: "খ্যাতনামা" }
+    "long": { def: "extending a great distance", bn: "দীর্ঘ", pron: "/lɔːŋ/" },
+    "ago": { def: "before the present; earlier", bn: "পূর্বে", pron: "/əˈɡoʊ/" },
+    "venice": { def: "a city in northeastern Italy", bn: "ভেনিস", pron: "/ˈvɛnɪs/" },
+    "rich": { def: "Having a great deal of money", bn: "ধনী", pron: "/rɪtʃ/" },
+    "senator": { def: "member of a senate", bn: "সেনেটর", pron: "/ˈsɛnətər/" },
+    "brabantio": { def: "a senator, Desdemona's father", bn: "ব্র্যাবানসিও", pron: "/brəˈbænti.oʊ/" },
+    "beautiful": { def: "pleasing to the eye", bn: "সুন্দর", pron: "/ˈbjuːtɪfəl/" },
+    "daughter": { def: "female child", bn: "কন্যা", pron: "/ˈdɔːtər/" },
+    "gentle": { def: "mild, kind", bn: "কোমল", pron: "/ˈdʒɛntl/" },
+    "desdemona": { def: "heroine of Othello", bn: "দেশিমোনা", pron: "/ˌdɛzdəˈmoʊnə/" },
+    "sought": { def: "tried to find (past of seek)", bn: "খোঁজা হয়েছিল", pron: "/sɔːt/" },
+    "suitors": { def: "men seeking marriage", bn: "বিবাহের পাত্র", pron: "/ˈsuːtərz/" },
+    "clime": { def: "region, climate", bn: "অঞ্চল", pron: "/klaɪm/" },
+    "complexion": { def: "skin tone, appearance", bn: "গায়ের রং", pron: "/kəmˈplɛkʃən/" },
+    "noble": { def: "aristocratic, high-born", bn: "মহৎ", pron: "/ˈnoʊbəl/" },
+    "lady": { def: "woman of high rank", bn: "মহীয়সী", pron: "/ˈleɪdi/" },
+    "heart": { def: "center of emotions", bn: "হৃদয়", pron: "/hɑːrt/" },
+    "appearance": { def: "the way something looks", bn: "বাহ্যিক রূপ", pron: "/əˈpɪrəns/" },
+    "moor": { def: "a dark-skinned Muslim or person of North African descent", bn: "মুর", pron: "/mʊr/" },
+    "valiant": { def: "brave, heroic", bn: "বীর", pron: "/ˈvæljənt/" },
+    "soldier": { def: "a person who serves in an army", bn: "সৈনিক", pron: "/ˈsoʊldʒər/" },
+    "heroics": { def: "brave actions", bn: "বীরত্বপূর্ণ কাজ", pron: "/həˈroʊɪks/" },
+    "bloody": { def: "involving bloodshed", bn: "রক্তাক্ত", pron: "/ˈblʌdi/" },
+    "turks": { def: "people of Turkey", bn: "তুর্কি", pron: "/tɜːrks/" },
+    "general": { def: "high military rank", bn: "জেনারেল", pron: "/ˈdʒɛnərəl/" },
+    "esteemed": { def: "respected highly", bn: "সম্মানিত", pron: "/ɪˈstiːmd/" },
+    "revered": { def: "deeply respected", bn: "পূজিত", pron: "/rɪˈvɪrd/" },
+    "traveller": { def: "one who travels", bn: "ভ্রমণকারী", pron: "/ˈtrævələr/" },
+    "keen": { def: "eager, enthusiastic", bn: "আগ্রহী", pron: "/kiːn/" },
+    "stories": { def: "narratives", bn: "গল্প", pron: "/ˈstɔːriz/" },
+    "adventure": { def: "exciting experience", bn: "অভিযান", pron: "/ədˈvɛntʃər/" },
+    "recollected": { def: "remembered", bn: "স্মরণ করা", pron: "/ˌrɛkəˈlɛktɪd/" },
+    "experiences": { def: "events lived through", bn: "অভিজ্ঞতা", pron: "/ɪkˈspɪriənsɪz/" },
+    "battles": { def: "fights between armies", bn: "যুদ্ধ", pron: "/ˈbætlz/" },
+    "sieges": { def: "military blockades", bn: "অবরোধ", pron: "/ˈsiːdʒɪz/" },
+    "encounters": { def: "meetings, often confrontational", bn: "মুখোমুখি", pron: "/ɪnˈkaʊntərz/" },
+    "perils": { def: "dangers", bn: "বিপদ", pron: "/ˈpɛrəlz/" },
+    "breach": { def: "gap in a wall", bn: "ভাঙন", pron: "/briːtʃ/" },
+    "cannon": { def: "large gun", bn: "কামান", pron: "/ˈkænən/" },
+    "captivated": { def: "charmed, fascinated", bn: "মোহিত", pron: "/ˈkæptɪveɪtɪd/" },
+    "insolent": { def: "rude, arrogant", bn: "উদ্ধত", pron: "/ˈɪnsələnt/" },
+    "slave": { def: "a person owned by another", bn: "দাস", pron: "/sleɪv/" },
+    "demeaned": { def: "lowered in dignity", bn: "হেয় করা", pron: "/dɪˈmiːnd/" },
+    "escaped": { def: "got free", bn: "পলায়ন", pron: "/ɪˈskeɪpt/" },
+    "rapt": { def: "completely absorbed", bn: "একধ্যানে", pron: "/ræpt/" },
+    "attention": { def: "notice, concentration", bn: "মনোযোগ", pron: "/əˈtɛnʃən/" },
+    "accounts": { def: "reports, narratives", bn: "বিবরণ", pron: "/əˈkaʊnts/" },
+    "narration": { def: "act of telling a story", bn: "বর্ণনা", pron: "/nəˈreɪʃən/" },
+    "strange": { def: "unusual, odd", bn: "অদ্ভুত", pron: "/streɪndʒ/" },
+    "foreign": { def: "from another country", bn: "বিদেশি", pron: "/ˈfɔːrən/" },
+    "countries": { def: "nations", bn: "দেশ", pron: "/ˈkʌntriz/" },
+    "wilderness": { def: "uncultivated land", bn: "অরণ্য", pron: "/ˈwɪldərnəs/" },
+    "romantic": { def: "pleasingly picturesque", bn: "মনোরম", pron: "/roʊˈmæntɪk/" },
+    "caverns": { def: "large caves", bn: "গুহা", pron: "/ˈkævərnz/" },
+    "quarries": { def: "places where stone is mined", bn: "পাথর খনি", pron: "/ˈkwɔːriz/" },
+    "rocks": { def: "stones", bn: "পাথর", pron: "/rɒks/" },
+    "lofty": { def: "very high", bn: "উঁচু", pron: "/ˈlɒfti/" },
+    "mountains": { def: "large natural elevations", bn: "পাহাড়", pron: "/ˈmaʊntənz/" },
+    "clouds": { def: "visible masses of water vapor", bn: "মেঘ", pron: "/klaʊdz/" },
+    "savage": { def: "fierce, uncivilized", bn: "বর্বর", pron: "/ˈsævɪdʒ/" },
+    "nations": { def: "large groups of people", bn: "জাতি", pron: "/ˈneɪʃənz/" },
+    "cannibals": { def: "people who eat human flesh", bn: "নরখাদক", pron: "/ˈkænɪbəlz/" },
+    "man-eaters": { def: "cannibals", bn: "মানুষখেকো", pron: "/ˈmænˌiːtərz/" },
+    "race": { def: "group of people with common ancestry", bn: "জাতি", pron: "/reɪs/" },
+    "africa": { def: "continent", bn: "আফ্রিকা", pron: "/ˈæfrɪkə/" },
+    "shoulders": { def: "upper part of the body", bn: "কাঁধ", pron: "/ˈʃoʊldərz/" },
+    "enticed": { def: "attracted, tempted", bn: "প্রলুব্ধ", pron: "/ɪnˈtaɪst/" },
+    "household": { def: "related to home or family", bn: "গৃহস্থালি", pron: "/ˈhaʊshoʊld/" },
+    "affairs": { def: "matters, business", bn: "কাজ", pron: "/əˈfɛrz/" },
+    "haste": { def: "speed, quickness", bn: "দ্রুতি", pron: "/heɪst/" },
+    "greedy": { def: "having a strong desire", bn: "লোভী", pron: "/ˈɡriːdi/" },
+    "devour": { def: "read or listen eagerly", bn: "গ্রাস করা", pron: "/dɪˈvaʊər/" },
+    "discourse": { def: "long speech", bn: "বক্তব্য", pron: "/dɪsˈkɔːrs/" },
+    "sigh": { def: "long deep breath", bn: "দীর্ঘশ্বাস", pron: "/saɪ/" },
+    "modesty": { def: "humbleness", bn: "বিনয়", pron: "/ˈmɒdɪsti/" },
+    "blushes": { def: "reddening of the face", bn: "লজ্জা", pron: "/ˈblʌʃɪz/" },
+    "consent": { def: "agreement", bn: "সম্মতি", pron: "/kənˈsɛnt/" },
+    "generous": { def: "giving freely", bn: "উদার", pron: "/ˈdʒɛnərəs/" },
+    "gorgeous": { def: "very beautiful", bn: "চমৎকার", pron: "/ˈɡɔːrdʒəs/" },
+    "marriage": { def: "wedding", bn: "বিয়ে", pron: "/ˈmærɪdʒ/" },
+    "privately": { def: "in secret", bn: "গোপনে", pron: "/ˈpraɪvɪtli/" },
+    "solemnized": { def: "formally celebrated", bn: "আনুষ্ঠানিক", pron: "/ˈsɒləmnaɪzd/" },
+    "secret": { def: "hidden, concealed", bn: "গোপন", pron: "/ˈsiːkrɪt/" },
+    "appealed": { def: "made a request", bn: "আবেদন", pron: "/əˈpiːld/" },
+    "duke": { def: "ruler of a duchy", bn: "ডিউক", pron: "/duːk/" },
+    "justice": { def: "fairness", bn: "ন্যায়", pron: "/ˈdʒʌstɪs/" },
+    "accusing": { def: "charging with fault", bn: "অভিযোগ", pron: "/əˈkjuːzɪŋ/" },
+    "spell": { def: "magic formula", bn: "জাদু", pron: "/spɛl/" },
+    "witchcraft": { def: "use of magic", bn: "জাদুটোনা", pron: "/ˈwɪtʃkræft/" },
+    "seduce": { def: "persuade to do wrong", bn: "প্রলুব্ধ করা", pron: "/sɪˈduːs/" },
+    "state": { def: "nation, condition", bn: "রাষ্ট্র", pron: "/steɪt/" },
+    "urgent": { def: "requiring immediate action", bn: "জরুরি", pron: "/ˈɜːrdʒənt/" },
+    "senate": { def: "governing council", bn: "সেনেট", pron: "/ˈsɛnɪt/" },
+    "fleet": { def: "group of ships", bn: "নৌবহর", pron: "/fliːt/" },
+    "mighty": { def: "powerful", bn: "শক্তিশালী", pron: "/ˈmaɪti/" },
+    "preparation": { def: "readying", bn: "প্রস্তুতি", pron: "/ˌprɛpəˈreɪʃən/" },
+    "hostility": { def: "enmity, war", bn: "শত্রুতা", pron: "/hɒsˈtɪlɪti/" },
+    "cyprus": { def: "island in the Mediterranean", bn: "সাইপ্রাস", pron: "/ˈsaɪprəs/" },
+    "emergency": { def: "crisis", bn: "জরুরি অবস্থা", pron: "/ɪˈmɜːrdʒənsi/" },
+    "competent": { def: "able, capable", bn: "দক্ষ", pron: "/ˈkɒmpɪtənt/" },
+    "invasion": { def: "attack, entry by force", bn: "আক্রমণ", pron: "/ɪnˈveɪʒən/" },
+    "summoned": { def: "called to appear", bn: "তলব", pron: "/ˈsʌmənd/" },
+    "candidate": { def: "applicant for position", bn: "প্রার্থী", pron: "/ˈkændɪdət/" },
+    "employment": { def: "work, job", bn: "চাকরি", pron: "/ɪmˈplɔɪmənt/" },
+    "culprit": { def: "person accused of crime", bn: "অভিযুক্ত", pron: "/ˈkʌlprɪt/" },
+    "offences": { def: "crimes, wrongs", bn: "অপরাধ", pron: "/əˈfɛnsɪz/" },
+    "utmost": { def: "greatest", bn: "সর্বোচ্চ", pron: "/ˈʌtmoʊst/" },
+    "patience": { def: "ability to wait", bn: "ধৈর্য", pron: "/ˈpeɪʃəns/" },
+    "assembly": { def: "group of people gathered", bn: "সভা", pron: "/əˈsɛmbli/" },
+    "infuriated": { def: "furious, angry", bn: "ক্ষিপ্ত", pron: "/ɪnˈfjʊrieɪtɪd/" },
+    "outrageous": { def: "shocking, offensive", bn: "আপত্তিকর", pron: "/aʊtˈreɪdʒəs/" },
+    "defence": { def: "justification", bn: "আত্মপক্ষ", pron: "/dɪˈfɛns/" },
+    "narrate": { def: "tell a story", bn: "বর্ণনা", pron: "/nəˈreɪt/" },
+    "artless": { def: "simple, natural", bn: "সহজ-সরল", pron: "/ˈɑːrtləs/" },
+    "eloquence": { def: "fluent speaking", bn: "বাকপটুতা", pron: "/ˈɛləkwəns/" },
+    "confess": { def: "admit", bn: "স্বীকার করা", pron: "/kənˈfɛs/" },
+    "courtship": { def: "wooing period", bn: "প্রেমালাপ", pron: "/ˈkɔːrtʃɪp/" },
+    "plainly": { def: "clearly", bn: "স্পষ্টভাবে", pron: "/ˈpleɪnli/" },
+    "honest": { def: "truthful", bn: "সৎ", pron: "/ˈɒnɪst/" },
+    "arts": { def: "skills", bn: "কৌশল", pron: "/ɑːrts/" },
+    "wooing": { def: "courting", bn: "প্রণয় নিবেদন", pron: "/ˈwuːɪŋ/" },
+    "statement": { def: "declaration", bn: "বক্তব্য", pron: "/ˈsteɪtmənt/" },
+    "confirmed": { def: "validated", bn: "নিশ্চিত", pron: "/kənˈfɜːrmd/" },
+    "acknowledged": { def: "admitted", bn: "স্বীকার", pron: "/əkˈnɒlɪdʒd/" },
+    "bound": { def: "obligated", bn: "বাধ্য", pron: "/baʊnd/" },
+    "duty": { def: "responsibility", bn: "কর্তব্য", pron: "/ˈdjuːti/" },
+    "education": { def: "training, learning", bn: "শিক্ষা", pron: "/ˌɛdʒʊˈkeɪʃən/" },
+    "higher": { def: "greater", bn: "উচ্চতর", pron: "/ˈhaɪər/" },
+    "perform": { def: "carry out", bn: "পালন করা", pron: "/pərˈfɔːrm/" },
+    "lover": { def: "romantic partner", bn: "প্রেমিক", pron: "/ˈlʌvər/" },
+    "husband": { def: "married man", bn: "স্বামী", pron: "/ˈhʌzbənd/" },
+    "preferring": { def: "liking better", bn: "পছন্দ করা", pron: "/prɪˈfɜːrɪŋ/" },
+    "maintain": { def: "keep up", bn: "বজায় রাখা", pron: "/meɪnˈteɪn/" },
+    "plea": { def: "request", bn: "আবেদন", pron: "/pliː/" },
+    "tyrant": { def: "cruel ruler", bn: "অত্যাচারী", pron: "/ˈtaɪrənt/" },
+    "clogs": { def: "hindrances", bn: "বাধা", pron: "/klɒɡz/" },
+    "desertion": { def: "abandonment", bn: "ত্যাগ", pron: "/dɪˈzɜːrʃən/" },
+    "deceived": { def: "misled", bn: "প্রতারিত", pron: "/dɪˈsiːvd/" },
+    "trial": { def: "court hearing", bn: "বিচার", pron: "/ˈtraɪəl/" },
+    "readily": { def: "willingly, easily", bn: "উৎসাহের সাথে", pron: "/ˈrɛdɪli/" },
+    "refused": { def: "denied", bn: "অস্বীকার", pron: "/rɪˈfjuːzd/" },
+    "boldly": { def: "confidently", bn: "সাহসের সাথে", pron: "/ˈboʊldli/" },
+    "newly": { def: "recently", bn: "নতুন করে", pron: "/ˈnuːli/" },
+    "couple": { def: "two people together", bn: "দম্পতি", pron: "/ˈkʌpəl/" },
+    "landed": { def: "came to shore", bn: "অবতরণ", pron: "/ˈlændɪd/" },
+    "violent": { def: "forceful", bn: "প্রচণ্ড", pron: "/ˈvaɪələnt/" },
+    "tempest": { def: "violent storm", bn: "ঝড়", pron: "/ˈtɛmpɪst/" },
+    "dispersed": { def: "scattered", bn: "ছত্রভঙ্গ", pron: "/dɪˈspɜːrst/" },
+    "secure": { def: "safe", bn: "সুরক্ষিত", pron: "/sɪˈkjʊr/" },
+    "suffer": { def: "endure pain", bn: "সহ্য করা", pron: "/ˈsʌfər/" },
+    "enemies": { def: "foes", bn: "শত্রু", pron: "/ˈɛnəmiz/" },
+    "malice": { def: "ill will", bn: "বিদ্বেষ", pron: "/ˈmælɪs/" },
+    "deadly": { def: "fatal, lethal", bn: "মারাত্মক", pron: "/ˈdɛdli/" },
+    "strangers": { def: "unknown persons", bn: "অপরিচিত", pron: "/ˈstreɪndʒərz/" },
+    "infidels": { def: "unbelievers", bn: "কাফের", pron: "/ˈɪnfɪdəlz/" },
+    "friends": { def: "companions", bn: "বন্ধু", pron: "/frɛndz/" },
+    "possessed": { def: "owned, had", bn: "অধিকারী", pron: "/pəˈzɛst/" },
+    "confidence": { def: "trust", bn: "বিশ্বাস", pron: "/ˈkɒnfɪdəns/" },
+    "cassio": { def: "Othello's lieutenant", bn: "ক্যাসিও", pron: "/ˈkæsioʊ/" },
+    "florentine": { def: "from Florence", bn: "ফ্লরেন্সীয়", pron: "/ˈflɒrəntiːn/" },
+    "amorous": { def: "romantic", bn: "প্রণয়াসক্ত", pron: "/ˈæmərəs/" },
+    "pleasing": { def: "satisfying", bn: "আনন্দদায়ক", pron: "/ˈpliːzɪŋ/" },
+    "handsome": { def: "good-looking", bn: "সুদর্শন", pron: "/ˈhænsəm/" },
+    "eloquent": { def: "well-spoken", bn: "বক্তা", pron: "/ˈɛləkwənt/" },
+    "jealousy": { def: "envy, suspicion", bn: "ঈর্ষা", pron: "/ˈdʒɛləsi/" },
+    "depute": { def: "assign as a deputy", bn: "প্রতিনিধি নিযুক্ত করা", pron: "/dɪˈpjuːt/" },
+    "innocent": { def: "not guilty", bn: "নির্দোষ", pron: "/ˈɪnəsənt/" },
+    "simplicity": { def: "plainness", bn: "সরলতা", pron: "/sɪmˈplɪsɪti/" },
+    "honour": { def: "respect, pride", bn: "সম্মান", pron: "/ˈɒnər/" },
+    "blemish": { def: "flaw", bn: "কলঙ্ক", pron: "/ˈblɛmɪʃ/" },
+    "character": { def: "personality", bn: "চরিত্র", pron: "/ˈkærɪktər/" },
+    "trusted": { def: "relied on", bn: "বিশ্বস্ত", pron: "/ˈtrʌstɪd/" },
+    "frequented": { def: "visited often", bn: "প্রায়ই যেত", pron: "/frɪˈkwɛntɪd/" },
+    "rattling": { def: "lively, fast", bn: "চটুল", pron: "/ˈrætlɪŋ/" },
+    "serious": { def: "grave, thoughtful", bn: "গম্ভীর", pron: "/ˈsɪriəs/" },
+    "temper": { def: "mood, disposition", bn: "মেজাজ", pron: "/ˈtɛmpər/" },
+    "promoted": { def: "advanced in rank", bn: "পদোন্নতি", pron: "/prəˈmoʊtɪd/" },
+    "lieutenant": { def: "military officer rank", bn: "লেফট্যানেন্ট", pron: "/luːˈtɛnənt/" },
+    "promotion": { def: "advancement", bn: "উন্নতি", pron: "/prəˈmoʊʃən/" },
+    "offence": { def: "annoyance, crime", bn: "অপরাধ", pron: "/əˈfɛns/" },
+    "iago": { def: "the villain of the play", bn: "ইয়াগো", pron: "/iˈɑːɡoʊ/" },
+    "elder": { def: "older", bn: "প্রবীণ", pron: "/ˈɛldər/" },
+    "claim": { def: "assertion of right", bn: "দাবি", pron: "/kleɪm/" },
+    "scorn": { def: "contempt, mockery", bn: "অবজ্ঞা", pron: "/skɔːrn/" },
+    "befitting": { def: "suitable for", bn: "উপযুক্ত", pron: "/bɪˈfɪtɪŋ/" },
+    "warfare": { def: "armed conflict", bn: "যুদ্ধবিদ্যা", pron: "/ˈwɔːrfɛr/" },
+    "hated": { def: "disliked intensely", bn: "ঘৃণা করা", pron: "/ˈheɪtɪd/" },
+    "favouring": { def: "preferring", bn: "পক্ষপাত", pron: "/ˈfeɪvərɪŋ/" },
+    "unjust": { def: "unfair", bn: "অন্যায্য", pron: "/ʌnˈdʒʌst/" },
+    "suspicion": { def: "mistrust", bn: "সন্দেহ", pron: "/səˈspɪʃən/" },
+    "emilia": { def: "Iago's wife", bn: "এমিলিয়া", pron: "/ɪˈmɪliə/" },
+    "imaginary": { def: "not real", bn: "কাল্পনিক", pron: "/ɪˈmædʒɪnɛri/" },
+    "provocations": { def: "incitements", bn: "প্ররোচনা", pron: "/ˌprɒvəˈkeɪʃənz/" },
+    "scheme": { def: "plan", bn: "পরিকল্পনা", pron: "/skiːm/" },
+    "revenge": { def: "retaliation", bn: "প্রতিশোধ", pron: "/rɪˈvɛndʒ/" },
+    "ruin": { def: "destruction", bn: "ধ্বংস", pron: "/ˈruːɪn/" },
+    "crafty": { def: "cunning, sly", bn: "চতুর", pron: "/ˈkræfti/" },
+    "studied": { def: "examined", bn: "অধ্যয়ন", pron: "/ˈstʌdid/" },
+    "human": { def: "of people", bn: "মানুষ", pron: "/ˈhjuːmən/" },
+    "mind": { def: "intellect", bn: "মন", pron: "/maɪnd/" },
+    "afflictions": { def: "sufferings", bn: "দুঃখ-কষ্ট", pron: "/əˈflɪkʃənz/" },
+    "torment": { def: "torture", bn: "যন্ত্রণা", pron: "/ˈtɔːrmɛnt/" },
+    "unbearable": { def: "intolerable", bn: "অসহ্য", pron: "/ʌnˈbɛrəbəl/" },
+    "sorest": { def: "most severe", bn: "সবচেয়ে তীব্র", pron: "/sɔːrɪst/" },
+    "sting": { def: "sharp pain", bn: "দংশন", pron: "/stɪŋ/" },
+    "envious": { def: "jealous", bn: "ঈর্ষান্বিত", pron: "/ˈɛnviəs/" },
+    "excellent": { def: "very good", bn: "চমৎকার", pron: "/ˈɛksələnt/" },
+    "plot": { def: "conspiracy", bn: "চক্রান্ত", pron: "/plɒt/" },
+    "culminate": { def: "climax", bn: "সমাপ্তি", pron: "/ˈkʌlmɪneɪt/" },
+    "death": { def: "end of life", bn: "মৃত্যু", pron: "/dɛθ/" },
+    "arrival": { def: "coming", bn: "আগমন", pron: "/əˈraɪvəl/" },
+    "holiday": { def: "festive day", bn: "উৎসব", pron: "/ˈhɒlɪdeɪ/" },
+    "mood": { def: "state of mind", bn: "মেজাজ", pron: "/muːd/" },
+    "island": { def: "land surrounded by water", bn: "দ্বীপ", pron: "/ˈaɪlənd/" },
+    "feasting": { def: "eating lavishly", bn: "ভোজ", pron: "/ˈfiːstɪŋ/" },
+    "merry": { def: "cheerful", bn: "প্রফুল্ল", pron: "/ˈmɛri/" },
+    "guard": { def: "sentry", bn: "প্রহরী", pron: "/ɡɑːrd/" },
+    "charge": { def: "responsibility", bn: "দায়িত্ব", pron: "/tʃɑːrdʒ/" },
+    "restrain": { def: "hold back", bn: "সংযত করা", pron: "/rɪˈstreɪn/" },
+    "excessively": { def: "too much", bn: "অতিরিক্ত", pron: "/ɪkˈsɛsɪvli/" },
+    "guise": { def: "pretence", bn: "ছল", pron: "/ɡaɪz/" },
+    "loyalty": { def: "faithfulness", bn: "আনুগত্য", pron: "/ˈlɔɪəlti/" },
+    "lured": { def: "enticed", bn: "প্রলুব্ধ", pron: "/lʊrd/" },
+    "drink": { def: "beverage", bn: "পানীয়", pron: "/drɪŋk/" },
+    "fault": { def: "mistake, error", bn: "অপরাধ", pron: "/fɔːlt/" },
+    "resisted": { def: "opposed", bn: "প্রতিরোধ", pron: "/rɪˈzɪstɪd/" },
+    "initially": { def: "at first", bn: "প্রথমে", pron: "/ɪˈnɪʃəli/" },
+    "guile": { def: "cunning, trickery", bn: "চাতুরী", pron: "/ɡaɪl/" },
+    "swallowed": { def: "took in", bn: "গিলে ফেলা", pron: "/ˈswɒloʊd/" },
+    "drunk": { def: "intoxicated", bn: "মাতাল", pron: "/drʌŋk/" },
+    "provoked": { def: "stimulated, incited", bn: "উসকানি", pron: "/prəˈvoʊkt/" },
+    "praised": { def: "complimented", bn: "প্রশংসা", pron: "/preɪzd/" },
+    "exquisite": { def: "excellent, fine", bn: "চমৎকার", pron: "/ɪkˈskwɪzɪt/" },
+    "scuffle": { def: "brief fight", bn: "হাতাহাতি", pron: "/ˈskʌfəl/" },
+    "montano": { def: "officer in Cyprus", bn: "মন্তানো", pron: "/mɒnˈtɑːnoʊ/" },
+    "worthy": { def: "deserving", bn: "যোগ্য", pron: "/ˈwɜːrði/" },
+    "interfered": { def: "intruded", bn: "হস্তক্ষেপ", pron: "/ˌɪntərˈfɪrd/" },
+    "pacify": { def: "calm, quiet", bn: "শান্ত করা", pron: "/ˈpæsɪfaɪ/" },
+    "wounded": { def: "injured", bn: "আহত", pron: "/ˈwuːndɪd/" },
+    "alarm": { def: "warning signal", bn: "অ্যালার্ম", pron: "/əˈlɑːrm/" },
+    "mutiny": { def: "rebellion", bn: "বিদ্রোহ", pron: "/ˈmjuːtəni/" },
+    "awakened": { def: "woke up", bn: "জাগ্রত", pron: "/əˈweɪkənd/" },
+    "rationality": { def: "reasoning", bn: "যৌক্তিকতা", pron: "/ˌræʃəˈnælɪti/" },
+    "ashamed": { def: "embarrassed", bn: "লজ্জিত", pron: "/əˈʃeɪmd/" },
+    "reluctant": { def: "unwilling", bn: "অনিচ্ছুক", pron: "/rɪˈlʌktənt/" },
+    "compelled": { def: "forced", bn: "বাধ্য", pron: "/kəmˈpɛld/" },
+    "strict": { def: "severe, precise", bn: "কঠোর", pron: "/strɪkt/" },
+    "observer": { def: "one who watches", bn: "পর্যবেক্ষক", pron: "/əbˈzɜːrvər/" },
+    "discipline": { def: "regulation, order", bn: "শৃঙ্খলা", pron: "/ˈdɪsɪplɪn/" },
+    "artifice": { def: "trickery", bn: "কৌশল", pron: "/ˈɑːrtɪfɪs/" },
+    "undermined": { def: "weakened", bn: "ক্ষুণ্ণ", pron: "/ˌʌndərˈmaɪnd/" },
+    "adversary": { def: "opponent", bn: "শত্রু", pron: "/ˈædvərsɛri/" },
+    "misfortune": { def: "bad luck", bn: "দুর্ভাগ্য", pron: "/mɪsˈfɔːrtʃən/" },
+    "sobered": { def: "became serious", bn: "সংযত", pron: "/ˈsoʊbərd/" },
+    "lamented": { def: "mourned", bn: "বিলাপ", pron: "/ləˈmɛntɪd/" },
+    "reputation": { def: "public opinion", bn: "খ্যাতি", pron: "/ˌrɛpjʊˈteɪʃən/" },
+    "immortal": { def: "everlasting", bn: "অমর", pron: "/ɪˈmɔːrtəl/" },
+    "bestial": { def: "brutal, animal-like", bn: "পশুতুল্য", pron: "/ˈbɛstʃəl/" },
+    "despised": { def: "hated, scorned", bn: "ঘৃণা", pron: "/dɪˈspaɪzd/" },
+    "mediate": { def: "intervene", bn: "মধ্যস্থতা", pron: "/ˈmiːdieɪt/" },
+    "solicitor": { def: "advocate", bn: "সুপারিশকারী", pron: "/səˈlɪsɪtər/" },
+    "mortally": { def: "fatally", bn: "মারাত্মকভাবে", pron: "/ˈmɔːrtəli/" },
+    "offended": { def: "hurt feelings", bn: "অপমানিত", pron: "/əˈfɛndɪd/" },
+    "pardon": { def: "forgiveness", bn: "ক্ষমা", pron: "/ˈpɑːrdən/" },
+    "offender": { def: "wrongdoer", bn: "অপরাধী", pron: "/əˈfɛndər/" },
+    "penitent": { def: "regretful", bn: "অনুশোচনা", pron: "/ˈpɛnɪtənt/" },
+    "humbled": { def: "made humble", bn: "বিনয়ী", pron: "/ˈhʌmbəld/" },
+    "magnitude": { def: "size, importance", bn: "মাত্রা", pron: "/ˈmæɡnɪtuːd/" },
+    "dispraise": { def: "criticism", bn: "অপ্রশংসা", pron: "/dɪsˈpreɪz/" },
+    "pleader": { def: "one who pleads", bn: "আবেদনকারী", pron: "/ˈpliːdər/" },
+    "imploring": { def: "begging", bn: "অনুনয়", pron: "/ɪmˈplɔːrɪŋ/" },
+    "intercession": { def: "mediation", bn: "সুপারিশ", pron: "/ˌɪntərˈsɛʃən/" },
+    "departed": { def: "left", bn: "প্রস্থান", pron: "/dɪˈpɑːrtɪd/" },
+    "opposite": { def: "other side", bn: "বিপরীত", pron: "/ˈɒpəzɪt/" },
+    "interaction": { def: "communication", bn: "আলাপচারিতা", pron: "/ˌɪntərˈækʃən/" },
+    "satisfaction": { def: "fulfillment", bn: "সন্তোষ", pron: "/ˌsætɪsˈfækʃən/" },
+    "affirmative": { def: "positive", bn: "হ্যাঁসূচক", pron: "/əˈfɜːrmətɪv/" },
+    "brow": { def: "forehead", bn: "ভ্রু", pron: "/braʊ/" },
+    "terrible": { def: "awful, dreadful", bn: "ভয়াবহ", pron: "/ˈtɛrəbəl/" },
+    "curiosity": { def: "strong desire to know", bn: "কৌতূহল", pron: "/ˌkjʊriˈɒsɪti/" },
+    "distraction": { def: "disturbance", bn: "অস্বস্তি", pron: "/dɪˈstrækʃən/" },
+    "cautious": { def: "careful", bn: "সতর্ক", pron: "/ˈkɔːʃəs/" },
+    "virtue": { def: "good quality", bn: "গুণ", pron: "/ˈvɜːrtʃuː/" },
+    "virtuous": { def: "having virtue", bn: "সৎ", pron: "/ˈvɜːrtʃuəs/" },
+    "proof": { def: "evidence", bn: "প্রমাণ", pron: "/pruːf/" },
+    "dishonest": { def: "untruthful", bn: "অসৎ", pron: "/dɪsˈɒnɪst/" },
+    "behaviour": { def: "conduct", bn: "আচরণ", pron: "/bɪˈheɪvjər/" },
+    "dispositions": { def: "temperaments", bn: "স্বভাব", pron: "/ˌdɪspəˈzɪʃənz/" },
+    "pranks": { def: "mischievous acts", bn: "কৌতুক", pron: "/præŋks/" },
+    "dared": { def: "ventured, had courage", bn: "সাহস", pron: "/dɛrd/" },
+    "insinuated": { def: "implied", bn: "ইঙ্গিত", pron: "/ɪnˈsɪnjueɪtɪd/" },
+    "argument": { def: "reason, point", bn: "যুক্তি", pron: "/ˈɑːrɡjʊmənt/" },
+    "apology": { def: "expression of regret", bn: "ক্ষমা চাওয়া", pron: "/əˈpɒlədʒi/" },
+    "rejected": { def: "refused", bn: "প্রত্যাখ্যান", pron: "/rɪˈdʒɛktɪd/" },
+    "suitable": { def: "appropriate", bn: "উপযুক্ত", pron: "/ˈsuːtəbəl/" },
+    "matches": { def: "suitable partners", bn: "পাত্র", pron: "/ˈmætʃɪz/" },
+    "unnatural": { def: "abnormal", bn: "অস্বাভাবিক", pron: "/ʌnˈnætʃərəl/" },
+    "probable": { def: "likely", bn: "সম্ভাব্য", pron: "/ˈprɒbəbəl/" },
+    "reconcilement": { def: "reconciliation", bn: "মিলন", pron: "/ˌrɛkənˈsaɪlmənt/" },
+    "earnestness": { def: "sincerity", bn: "আন্তরিকতা", pron: "/ˈɜːrnɪstnəs/" },
+    "solicit": { def: "ask for, plead", bn: "আবেদন", pron: "/səˈlɪsɪt/" },
+    "treacherous": { def: "betraying", bn: "বিশ্বাসঘাতক", pron: "/ˈtrɛtʃərəs/" },
+    "villain": { def: "evil person", bn: "খলনায়ক", pron: "/ˈvɪlən/" },
+    "destruction": { def: "ruin", bn: "ধ্বংস", pron: "/dɪˈstrʌkʃən/" },
+    "net": { def: "trap", bn: "জাল", pron: "/nɛt/" },
+    "entreat": { def: "beg", bn: "অনুরোধ", pron: "/ɪnˈtriːt/" },
+    "mediation": { def: "intervention", bn: "মধ্যস্থতা", pron: "/ˌmiːdiˈeɪʃən/" },
+    "stratagems": { def: "plans, tricks", bn: "কৌশল", pron: "/ˈstrætədʒəmz/" },
+    "restlessness": { def: "unease", bn: "অস্থিরতা", pron: "/ˈrɛstləsnəs/" },
+    "poppy": { def: "flower producing opium", bn: "পোস্ত", pron: "/ˈpɒpi/" },
+    "mandragora": { def: "hallucinogenic plant", bn: "মান্দ্রাগোরা", pron: "/mænˈdræɡərə/" },
+    "potions": { def: "medicinal drinks", bn: "ঔষধ", pron: "/ˈpoʊʃənz/" },
+    "occupation": { def: "job, activity", bn: "পেশা", pron: "/ˌɒkjuˈpeɪʃən/" },
+    "delight": { def: "great pleasure", bn: "আনন্দ", pron: "/dɪˈlaɪt/" },
+    "roused": { def: "awakened", bn: "জাগ্রত", pron: "/raʊzd/" },
+    "troops": { def: "soldiers", bn: "সৈন্য", pron: "/truːps/" },
+    "neighing": { def: "horse sound", bn: "হ্রেষা", pron: "/ˈneɪɪŋ/" },
+    "ambition": { def: "desire for success", bn: "উচ্চাকাঙ্ক্ষা", pron: "/æmˈbɪʃən/" },
+    "contrary": { def: "opposite", bn: "বিপরীত", pron: "/ˈkɒntrəri/" },
+    "throat": { def: "front of neck", bn: "গলা", pron: "/θroʊt/" },
+    "demanded": { def: "asked forcefully", bn: "দাবি", pron: "/dɪˈmændɪd/" },
+    "guilt": { def: "responsibility for wrong", bn: "অপরাধবোধ", pron: "/ɡɪlt/" },
+    "instant": { def: "immediate", bn: "তাৎক্ষণিক", pron: "/ˈɪnstənt/" },
+    "belied": { def: "contradicted, misrepresented", bn: "মিথ্যা প্রমাণ", pron: "/bɪˈlaɪd/" },
+    "feigned": { def: "pretended", bn: "ভান", pron: "/feɪnd/" },
+    "indignation": { def: "anger at injustice", bn: "ক্ষোভ", pron: "/ˌɪndɪɡˈneɪʃən/" },
+    "misinterpreted": { def: "understood wrongly", bn: "ভুল ব্যাখ্যা", pron: "/ˌmɪsɪnˈtɜːrprɪtɪd/" },
+    "vice": { def: "evil practice", bn: "অসৎ অভ্যাস", pron: "/vaɪs/" },
+    "handkerchief": { def: "cloth for wiping", bn: "রুমাল", pron: "/ˈhæŋkərtʃɪf/" },
+    "strawberries": { def: "red fruit", bn: "স্ট্রবেরি", pron: "/ˈstrɔːbɛriz/" },
+    "fidelity": { def: "loyalty", bn: "বিশ্বস্ততা", pron: "/fɪˈdɛlɪti/" },
+    "devise": { def: "plan, invent", bn: "পরিকল্পনা করা", pron: "/dɪˈvaɪz/" },
+    "swift": { def: "fast", bn: "দ্রুত", pron: "/swɪft/" },
+    "enquire": { def: "ask", bn: "জিজ্ঞাসা", pron: "/ɪnˈkwaɪər/" },
+    "sentence": { def: "punishment", bn: "শাস্তি", pron: "/ˈsɛntəns/" },
+    "constant": { def: "faithful, unchanging", bn: "অবিচল", pron: "/ˈkɒnstənt/" },
+    "wronged": { def: "treated unjustly", bn: "অন্যায়", pron: "/rɒŋd/" },
+    "naughty": { def: "misbehaving", bn: "দুষ্টু", pron: "/ˈnɔːti/" },
+    "shrewd": { def: "clever, astute", bn: "চতুর", pron: "/ʃruːd/" },
+    "pretence": { def: "pretending", bn: "ছল", pron: "/prɪˈtɛns/" },
+    "handle": { def: "opportunity", bn: "সুযোগ", pron: "/ˈhændəl/" },
+    "headache": { def: "pain in head", bn: "মাথাব্যথা", pron: "/ˈhɛdeɪk/" },
+    "temples": { def: "sides of forehead", bn: "কপালের পাশ", pron: "/ˈtɛmpəlz/" },
+    "amiable": { def: "friendly", bn: "স্নেহময়ী", pron: "/ˈeɪmiəbəl/" },
+    "subdue": { def: "conquer", bn: "বশীভূত", pron: "/səbˈduː/" },
+    "loathe": { def: "hate", bn: "ঘৃণা", pron: "/loʊð/" },
+    "magical": { def: "produced by magic", bn: "জাদুকরী", pron: "/ˈmædʒɪkəl/" },
+    "divert": { def: "distract, amuse", bn: "অন্য দিকে ঘুরানো", pron: "/daɪˈvɜːrt/" },
+    "suspect": { def: "believe (of crime)", bn: "সন্দেহ", pron: "/səˈspɛkt/" },
+    "unfaithful": { def: "disloyal", bn: "অবিশ্বস্ত", pron: "/ʌnˈfeɪθfəl/" },
+    "wept": { def: "cried", bn: "কাঁদলেন", pron: "/wɛpt/" },
+    "fortitude": { def: "courage", bn: "সহ্যশক্তি", pron: "/ˈfɔːrtɪtuːd/" },
+    "poverty": { def: "poorness", bn: "দারিদ্র্য", pron: "/ˈpɒvərti/" },
+    "disease": { def: "illness", bn: "রোগ", pron: "/dɪˈziːz/" },
+    "disgrace": { def: "shame", bn: "অপমান", pron: "/dɪsˈɡreɪs/" },
+    "infidelity": { def: "unfaithfulness", bn: "অবিশ্বস্ততা", pron: "/ˌɪnfɪˈdɛlɪti/" },
+    "weed": { def: "unwanted plant", bn: "আগাছা", pron: "/wiːd/" },
+    "smelled": { def: "had an odor", bn: "গন্ধ", pron: "/smɛld/" },
+    "ached": { def: "hurt", bn: "যন্ত্রণা", pron: "/eɪkt/" },
+    "stupefied": { def: "dazed, stunned", bn: "হতবাক", pron: "/ˈstuːpɪfaɪd/" },
+    "wonder": { def: "amazement", bn: "বিস্ময়", pron: "/ˈwʌndər/" },
+    "attendant": { def: "servant", bn: "পরিচারক", pron: "/əˈtɛndənt/" },
+    "chided": { def: "scolded", bn: "তিরস্কার", pron: "/ˈtʃaɪdɪd/" },
+    "babies": { def: "infants", bn: "শিশু", pron: "/ˈbeɪbiz/" },
+    "tasks": { def: "jobs", bn: "কাজ", pron: "/tæsks/" },
+    "meditated": { def: "planned, considered", bn: "চিন্তা", pron: "/ˈmɛdɪteɪtɪd/" },
+    "shed": { def: "spill", bn: "রক্তপাত", pron: "/ʃɛd/" },
+    "resolved": { def: "determined", bn: "সংকল্প", pron: "/rɪˈzɒlvd/" },
+    "betray": { def: "be disloyal", bn: "বিশ্বাসঘাতকতা", pron: "/bɪˈtreɪ/" },
+    "cruel": { def: "causing pain", bn: "নিষ্ঠুর", pron: "/ˈkruːəl/" },
+    "gnaw": { def: "chew, bite repeatedly", bn: "দংশন", pron: "/nɔː/" },
+    "fatal": { def: "deadly", bn: "মারাত্মক", pron: "/ˈfeɪtəl/" },
+    "mercy": { def: "compassion", bn: "করুণা", pron: "/ˈmɜːrsi/" },
+    "guiltless": { def: "innocent", bn: "নির্দোষ", pron: "/ˈɡɪltləs/" },
+    "proceeding": { def: "continuing", bn: "অগ্রসর", pron: "/prəˈsiːdɪŋ/" },
+    "stifled": { def: "suffocated", bn: "শ্বাসরোধ", pron: "/ˈstaɪfəld/" },
+    "assassinate": { def: "murder (political)", bn: "হত্যা", pron: "/əˈsæsɪneɪt/" },
+    "discovery": { def: "finding out", bn: "আবিষ্কার", pron: "/dɪˈskʌvəri/" },
+    "letters": { def: "written correspondence", bn: "চিঠি", pron: "/ˈlɛtərz/" },
+    "thunderstroke": { def: "stroke of lightning", bn: "বজ্রাঘাত", pron: "/ˈθʌndərstroʊk/" },
+    "murder": { def: "unlawful killing", bn: "হত্যা", pron: "/ˈmɜːrdər/" },
+    "extreme": { def: "very great", bn: "চরম", pron: "/ɪkˈstriːm/" },
+    "anguish": { def: "severe pain", bn: "যন্ত্রণা", pron: "/ˈæŋɡwɪʃ/" },
+    "intolerable": { def: "unbearable", bn: "অসহ্য", pron: "/ɪnˈtɒlərəbəl/" },
+    "rash": { def: "reckless", bn: "বেপরোয়া", pron: "/ræʃ/" },
+    "passion": { def: "strong emotion", bn: "আবেগ", pron: "/ˈpæʃən/" },
+    "horror": { def: "extreme fear", bn: "ভীতি", pron: "/ˈhɒrər/" },
+    "amazement": { def: "great surprise", bn: "বিস্ময়", pron: "/əˈmeɪzmənt/" },
+    "borne": { def: "carried, had (past)", bn: "ধারণ", pron: "/bɔːrn/" },
+    "doting": { def: "very affectionate", bn: "স্নেহপরায়ণ", pron: "/ˈdoʊtɪŋ/" },
+    "wisely": { def: "in a wise manner", bn: "বুদ্ধিমত্তার সাথে", pron: "/ˈwaɪzli/" },
+    "merits": { def: "good qualities", bn: "গুণাবলী", pron: "/ˈmɛrɪts/" },
+    "executed": { def: "put to death", bn: "মৃত্যুদণ্ড", pron: "/ˈɛksɪkjuːtɪd/" },
+    "tortures": { def: "severe pain inflicted", bn: "নির্যাতন", pron: "/ˈtɔːrtʃərz/" },
+    "demise": { def: "death", bn: "মৃত্যু", pron: "/dɪˈmaɪz/" },
+    "renowned": { def: "famous, celebrated", bn: "খ্যাতনামা", pron: "/rɪˈnaʊnd/" }
   };
 
-  // textbook notes
   const textbookNotes = [
     { term: "Siege", def: "a military operation to capture a town" },
     { term: "Insolent", def: "rude and disrespectful" },
@@ -761,7 +823,7 @@
     { term: "Wrought", def: "made, crafted" }
   ];
 
-  // ---------- 100 QUIZ (base) ----------
+  // ---------- 100 QUIZ ----------
   const baseQuestions = [
     { q: "Who was Brabantio?", opts: ["A rich Senator", "A General", "The Duke", "A merchant"], a: 0 },
     { q: "Why did Desdemona choose Othello?", opts: ["For wealth", "Regarded heart over appearance", "Forced by father", "Political title"], a: 1 },
@@ -799,7 +861,7 @@
       tokens.forEach(token => {
         const cleanKey = token.toLowerCase().replace(/[^a-z]/g, '');
         if (cleanKey.length > 0) {
-          parsedEng += `<span class="word" onclick="lookupWord('${cleanKey}', '${token.replace(/'/g, "\\'")}')">${token}</span>`;
+          parsedEng += `<span class="word" onclick="showPopup('${cleanKey}', '${token.replace(/'/g, "\\'")}', event)">${token}</span>`;
         } else {
           parsedEng += token;
         }
@@ -820,41 +882,88 @@
     list.innerHTML = '';
     textbookNotes.forEach(item => {
       const li = document.createElement('li');
-      li.onclick = () => lookupWord(item.term.toLowerCase(), item.term);
+      li.onclick = () => showPopup(item.term.toLowerCase(), item.term, null);
       li.innerHTML = `<strong>${item.term}:</strong> ${item.def}`;
       list.appendChild(li);
     });
   }
 
-  // ---------- DICTIONARY LOOKUP (stemming + fallback) ----------
-  function lookupWord(key, originalWord) {
-    const titleEl = document.getElementById('dict-word-title');
-    const defEl = document.getElementById('dict-def-text');
-    const clean = key.toLowerCase().replace(/[^a-z]/g, '');
+  // ---------- POPUP WITH PRONUNCIATION ----------
+  function showPopup(cleanKey, originalWord, event) {
+    const popup = document.getElementById('word-popup');
+    const wordEl = document.getElementById('popup-word');
+    const pronEl = document.getElementById('popup-pronounce');
+    const meaningEl = document.getElementById('popup-meaning');
+    const bnEl = document.getElementById('popup-bn');
+
+    const clean = cleanKey.toLowerCase().replace(/[^a-z]/g, '');
     const display = originalWord.replace(/[^a-zA-Z]/g, '') || clean;
 
-    titleEl.innerText = display;
+    // update sidebar as well
+    document.getElementById('dict-word-title').innerText = display;
+    const defBox = document.getElementById('dict-def-text');
 
-    // direct match
-    if (dictionaryDB[clean]) {
-      const entry = dictionaryDB[clean];
-      defEl.innerHTML = `<div class="dict-en"><strong>Meaning:</strong> ${entry.def}</div><div class="dict-bn"><strong>অর্থ:</strong> ${entry.bn}</div>`;
-      return;
+    wordEl.innerText = display;
+
+    let entry = dictionaryDB[clean];
+    if (!entry) {
+      // try stemming
+      let stem = clean.replace(/(ing|ed|es|s|ly|d)$/, '').replace(/i$/, 'y');
+      entry = dictionaryDB[stem] || null;
     }
 
-    // stemming
-    let stem = clean.replace(/(ing|ed|es|s|ly|d)$/, '').replace(/i$/, 'y');
-    if (dictionaryDB[stem]) {
-      const entry = dictionaryDB[stem];
-      defEl.innerHTML = `<div class="dict-en"><strong>Root: ${stem} —</strong> ${entry.def}</div><div class="dict-bn"><strong>অর্থ:</strong> ${entry.bn}</div>`;
-      return;
+    if (entry) {
+      pronEl.innerText = `[ ${entry.pron || 'pronunciation'} ]`;
+      meaningEl.innerText = `Meaning: ${entry.def}`;
+      bnEl.innerText = `অর্থ: ${entry.bn}`;
+      defBox.innerHTML = `<div class="dict-en"><strong>Meaning:</strong> ${entry.def}</div><div class="dict-bn"><strong>অর্থ:</strong> ${entry.bn}</div>`;
+    } else {
+      pronEl.innerText = `[ — ]`;
+      meaningEl.innerText = `Meaning: (contextual)`;
+      bnEl.innerText = `অর্থ: প্রাসঙ্গিক অর্থ`;
+      defBox.innerHTML = `<div style="color:#38bdf8;"><strong>${display}</strong></div><div style="color:#94a3b8;font-style:italic;">Standard literary term.</div>`;
     }
 
-    // fallback (100% coverage)
-    const cap = display.charAt(0).toUpperCase() + display.slice(1);
-    defEl.innerHTML = `<div style="color:#38bdf8;"><strong>${cap}</strong></div><div style="color:#94a3b8;font-style:italic;">Standard literary word — contextual meaning.</div>`;
+    // position popup near cursor or center
+    if (event && event.clientX) {
+      let left = event.clientX + 20;
+      let top = event.clientY - 20;
+      // keep within viewport
+      if (left + 400 > window.innerWidth) left = window.innerWidth - 420;
+      if (top + 250 > window.innerHeight) top = window.innerHeight - 260;
+      if (top < 10) top = 10;
+      popup.style.left = left + 'px';
+      popup.style.top = top + 'px';
+    } else {
+      popup.style.left = '50%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+    }
+
+    popup.style.display = 'block';
+    // auto-hide after 5 seconds, but close button also works
+    clearTimeout(window.popupTimer);
+    window.popupTimer = setTimeout(() => { popup.style.display = 'none'; }, 6000);
   }
 
+  // close popup manually
+  document.getElementById('popup-close-btn').addEventListener('click', function() {
+    document.getElementById('word-popup').style.display = 'none';
+    clearTimeout(window.popupTimer);
+  });
+
+  // click outside popup closes it (on document)
+  document.addEventListener('click', function(e) {
+    const popup = document.getElementById('word-popup');
+    if (popup.style.display === 'block') {
+      if (!popup.contains(e.target) && !e.target.classList.contains('word')) {
+        popup.style.display = 'none';
+        clearTimeout(window.popupTimer);
+      }
+    }
+  });
+
+  // ---------- QUIZ ----------
   function renderQuiz() {
     const box = document.getElementById('mcq-box');
     box.innerHTML = '';
@@ -943,4 +1052,4 @@
   };
 </script>
 </body>
-      </html>
+  </html>
